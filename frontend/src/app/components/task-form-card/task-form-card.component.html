@@ -72,6 +72,41 @@
     }
   </div>
 
+  <!-- Campo: Fecha límite (opcional) -->
+  <div class="flex flex-col gap-1.5">
+    <label for="task-due-date" class="text-sm font-medium text-zinc-300">
+      Fecha límite
+      <span class="text-zinc-500 font-normal">(opcional)</span>
+    </label>
+    <div class="relative">
+      <input
+        id="task-due-date"
+        type="date"
+        [value]="dueDate()"
+        [min]="minDate"
+        (input)="onDueDateInput($event)"
+        class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-white
+               outline-none transition-all appearance-none
+               focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+               [color-scheme:dark]"
+      />
+      @if (dueDate()) {
+        <!-- Botón para limpiar la fecha -->
+        <button
+          type="button"
+          (click)="dueDate.set('')"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200 transition-colors"
+          aria-label="Quitar fecha"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      }
+    </div>
+  </div>
+
   <!-- Acciones -->
   <div class="flex gap-3 pt-1">
     <button
