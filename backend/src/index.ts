@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { corsMiddleware } from "./middlewares/cors.middleware.js";
+import { healthRouter } from "./routes/health.routes.js";
 import { groupsRouter } from "./routes/groups.routes.js";
 import { tasksRouter } from "./routes/tasks.routes.js";
 import { subtasksRouter } from "./routes/subtasks.routes.js";
@@ -12,6 +13,7 @@ app.use("*", corsMiddleware);
 
 // ── Health check ──────────────────────────────────────────────
 app.get("/", (c) => c.json({ status: "ok", message: "Task Manager API" }));
+app.route("/health", healthRouter);
 
 // ── Rutas de la API ───────────────────────────────────────────
 app.route("/api/groups", groupsRouter);
