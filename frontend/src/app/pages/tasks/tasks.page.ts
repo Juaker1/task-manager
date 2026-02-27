@@ -9,7 +9,7 @@ import {
 import { TaskFormCardComponent } from '../../components/task-form-card/task-form-card.component';
 import { TaskCardComponent } from '../../components/task-card/task-card.component';
 import { TaskService } from '../../services/task.service';
-import type { Task, CreateTaskPayload } from '../../models/task.model';
+import type { Task, Subtask, CreateTaskPayload } from '../../models/task.model';
 
 @Component({
   selector: 'app-tasks-page',
@@ -69,11 +69,17 @@ export class TasksPage implements OnInit {
   }
 
   // ── Toggle completado ─────────────────────────────────────────
+  // IMPORTANTE: el PUT devuelve solo la fila plana (sin subtasks ni group).
+  // Fusionamos la respuesta con los datos relacionales existentes para no perderlos.
   onToggleCompleted(task: Task): void {
     this.taskService.update(task.id, { completed: !task.completed }).subscribe({
       next: (updated) => {
         this.tasks.update((list) =>
-          list.map((t) => (t.id === updated.id ? updated : t))
+          list.map((t) =>
+            t.id === updated.id
+              ? { ...updated, subtasks: t.subtasks, group: t.group }
+              : t
+          )
         );
       },
       error: () => {
@@ -92,5 +98,12 @@ export class TasksPage implements OnInit {
         this.errorMsg.set('Error al eliminar la tarea.');
       },
     });
+  }
+
+  // ── Actualizar subtareas localmente ──────────────────────────
+  onSubtasksChanged({ taskId, subtasks }: { taskId: number; subtasks: Subtask[] }): void {
+    this.tasks.update((list) =>
+      list.map((t) => (t.id === taskId ? { ...t, subtasks } : t))
+    );
   }
 }

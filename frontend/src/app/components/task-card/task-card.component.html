@@ -1,118 +1,311 @@
-<!-- Tarjeta de tarea existente -->
+<!-- Tarjeta de tarea -->
 <div
-  class="group bg-zinc-800 border border-zinc-700 rounded-2xl p-4 flex gap-4
-         transition-all hover:border-zinc-500 hover:shadow-lg hover:shadow-black/20"
+  class="group bg-zinc-800 border border-zinc-700 rounded-2xl transition-all
+         hover:border-zinc-500 hover:shadow-lg hover:shadow-black/20"
   [class.opacity-60]="task().completed"
 >
-  <!-- Checkbox circular para marcar como completa -->
-  <button
-    (click)="onToggle()"
-    class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full border-2 transition-all
-           flex items-center justify-center"
-    [class.border-indigo-500]="!task().completed"
-    [class.bg-indigo-500]="task().completed"
-    [class.border-zinc-500]="task().completed"
-    [attr.aria-label]="task().completed ? 'Marcar como pendiente' : 'Marcar como completada'"
-  >
-    @if (task().completed) {
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="m5 12 5 5L20 7"/>
-      </svg>
-    }
-  </button>
+  <!-- ── Fila principal ────────────────────────────────────────── -->
+  <div class="p-4 flex gap-4">
 
-  <!-- Contenido de la tarjeta -->
-  <div class="flex-1 min-w-0">
-    <h3
-      class="text-sm font-medium text-white leading-snug truncate"
-      [class.line-through]="task().completed"
-      [class.text-zinc-500]="task().completed"
+    <!-- Checkbox circular -->
+    <button
+      (click)="onToggle()"
+      class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full border-2 transition-all
+             flex items-center justify-center"
+      [class.border-indigo-500]="!task().completed"
+      [class.bg-indigo-500]="task().completed"
+      [class.border-zinc-500]="task().completed"
+      [attr.aria-label]="task().completed ? 'Marcar como pendiente' : 'Marcar como completada'"
     >
-      {{ task().title }}
-    </h3>
-
-    @if (task().description) {
-      <p class="mt-1 text-xs text-zinc-400 line-clamp-2 leading-relaxed">
-        {{ task().description }}
-      </p>
-    }
-
-    <!-- Badges de metadatos -->
-    <div class="mt-2.5 flex items-center gap-2 flex-wrap">
-      <!-- Tipo de tarea -->
-      @if (task().type === 'daily') {
-        <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5
-                     rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-          </svg>
-          Diaria
-        </span>
+      @if (task().completed) {
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m5 12 5 5L20 7"/>
+        </svg>
       }
+    </button>
 
-      <!-- Prioridad -->
-      <span class="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border"
-        [class.bg-red-500/10]="task().priority === 'high'"
-        [class.text-red-400]="task().priority === 'high'"
-        [class.border-red-500/20]="task().priority === 'high'"
-        [class.bg-yellow-500/10]="task().priority === 'medium'"
-        [class.text-yellow-400]="task().priority === 'medium'"
-        [class.border-yellow-500/20]="task().priority === 'medium'"
-        [class.bg-zinc-500/10]="task().priority === 'low'"
-        [class.text-zinc-400]="task().priority === 'low'"
-        [class.border-zinc-600]="task().priority === 'low'"
+    <!-- Contenido central -->
+    <div class="flex-1 min-w-0">
+      <h3
+        class="text-sm font-medium text-white leading-snug truncate"
+        [class.line-through]="task().completed"
+        [class.text-zinc-500]="task().completed"
       >
-        {{ task().priority === 'high' ? 'Alta' : task().priority === 'medium' ? 'Media' : 'Baja' }}
-      </span>
+        {{ task().title }}
+      </h3>
 
-      <!-- Grupo -->
-      @if (task().group) {
-        <span
-          class="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border"
-          [style.background-color]="task().group!.color + '18'"
-          [style.color]="task().group!.color"
-          [style.border-color]="task().group!.color + '30'"
-        >
-          {{ task().group!.name }}
-        </span>
+      @if (task().description) {
+        <p class="mt-1 text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+          {{ task().description }}
+        </p>
       }
 
-      <!-- Fecha límite: solo se muestra si existe -->
-      @if (formattedDueDate()) {
-        <span
-          class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border"
-          [class.bg-purple-500/10]="isOverdue()"
-          [class.text-purple-400]="isOverdue()"
-          [class.border-purple-500/20]="isOverdue()"
-          [class.bg-red-500/10]="isDueUrgent()"
-          [class.text-red-400]="isDueUrgent()"
-          [class.border-red-500/20]="isDueUrgent()"
-          [class.bg-zinc-500/10]="!isOverdue() && !isDueUrgent()"
-          [class.text-zinc-400]="!isOverdue() && !isDueUrgent()"
-          [class.border-zinc-600]="!isOverdue() && !isDueUrgent()"
+      <!-- Badges de metadatos -->
+      <div class="mt-2.5 flex items-center gap-2 flex-wrap">
+
+        <!-- Tipo diaria -->
+        @if (task().type === 'daily') {
+          <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5
+                       rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            Diaria
+          </span>
+        }
+
+        <!-- Prioridad -->
+        <span class="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border"
+          [class.bg-red-500/10]="task().priority === 'high'"
+          [class.text-red-400]="task().priority === 'high'"
+          [class.border-red-500/20]="task().priority === 'high'"
+          [class.bg-yellow-500/10]="task().priority === 'medium'"
+          [class.text-yellow-400]="task().priority === 'medium'"
+          [class.border-yellow-500/20]="task().priority === 'medium'"
+          [class.bg-zinc-500/10]="task().priority === 'low'"
+          [class.text-zinc-400]="task().priority === 'low'"
+          [class.border-zinc-600]="task().priority === 'low'"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-          {{ isOverdue() ? 'Vencida · ' : isDueUrgent() ? 'Hoy · ' : '' }}{{ formattedDueDate() }}
+          {{ task().priority === 'high' ? 'Alta' : task().priority === 'medium' ? 'Media' : 'Baja' }}
         </span>
+
+        <!-- Grupo -->
+        @if (task().group) {
+          <span
+            class="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border"
+            [style.background-color]="task().group!.color + '18'"
+            [style.color]="task().group!.color"
+            [style.border-color]="task().group!.color + '30'"
+          >
+            {{ task().group!.name }}
+          </span>
+        }
+
+        <!-- Fecha límite (4 estados de color) -->
+        @if (formattedDueDate()) {
+          <span
+            class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border"
+            [class.bg-purple-500/10]="isOverdue()"
+            [class.text-purple-400]="isOverdue()"
+            [class.border-purple-500/20]="isOverdue()"
+            [class.bg-red-500/10]="!isOverdue() && isDueUrgent()"
+            [class.text-red-400]="!isOverdue() && isDueUrgent()"
+            [class.border-red-500/20]="!isOverdue() && isDueUrgent()"
+            [class.bg-yellow-500/10]="!isOverdue() && !isDueUrgent() && isDueSoon()"
+            [class.text-yellow-400]="!isOverdue() && !isDueUrgent() && isDueSoon()"
+            [class.border-yellow-500/20]="!isOverdue() && !isDueUrgent() && isDueSoon()"
+            [class.bg-zinc-500/10]="!isOverdue() && !isDueUrgent() && !isDueSoon()"
+            [class.text-zinc-400]="!isOverdue() && !isDueUrgent() && !isDueSoon()"
+            [class.border-zinc-600]="!isOverdue() && !isDueUrgent() && !isDueSoon()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            @if (isOverdue()) { Vencida · }
+            @else if (isDueUrgent()) { Hoy · }
+            @else if (isDueSoon()) { Pronto · }
+            {{ formattedDueDate() }}
+          </span>
+        }
+
+        <!-- Contador de subtareas (visible cuando hay subtareas) -->
+        @if (subtaskCount() > 0) {
+          <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5
+                       rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            {{ completedSubtaskCount() }}/{{ subtaskCount() }}
+          </span>
+        }
+      </div>
+
+      <!-- Barra de progreso (solo visible cuando hay subtareas) -->
+      @if (subtaskCount() > 0) {
+        <div class="mt-3">
+          <div class="w-full h-1 bg-zinc-700 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all duration-500"
+              [class.bg-emerald-500]="subtaskProgress() === 100"
+              [class.bg-indigo-500]="subtaskProgress() < 100"
+              [style.width]="subtaskProgress() + '%'"
+            ></div>
+          </div>
+        </div>
       }
+    </div>
+
+    <!-- Botones de acción: expandir + eliminar -->
+    <div class="flex items-start gap-1 mt-0.5">
+
+      <!-- Botón expandir subtareas -->
+      <button
+        (click)="onToggleExpand()"
+        class="transition-all p-1 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700"
+        [class.text-indigo-400]="isExpanded()"
+        [class.bg-indigo-500/10]="isExpanded()"
+        [attr.aria-label]="isExpanded() ? 'Colapsar subtareas' : 'Expandir subtareas'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200"
+             [class.rotate-180]="isExpanded()"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+
+      <!-- Botón eliminar (visible al hacer hover) -->
+      <button
+        (click)="onDelete()"
+        class="opacity-0 group-hover:opacity-100 transition-opacity
+               text-zinc-600 hover:text-red-400 p-1 rounded-lg hover:bg-red-400/10"
+        aria-label="Eliminar tarea"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+        </svg>
+      </button>
     </div>
   </div>
 
-  <!-- Botón eliminar (visible al hacer hover) -->
-  <button
-    (click)="onDelete()"
-    class="opacity-0 group-hover:opacity-100 transition-opacity self-start mt-0.5
-           text-zinc-600 hover:text-red-400 p-1 rounded-lg hover:bg-red-400/10"
-    aria-label="Eliminar tarea"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
-    </svg>
-  </button>
+  <!-- ── Panel de subtareas (expandible) ────────────────────── -->
+  @if (isExpanded()) {
+    <div class="px-4 pb-4 border-t border-zinc-700/50 pt-3 flex flex-col gap-2">
+
+      <!-- Lista de subtareas existentes -->
+      @for (subtask of subtasks(); track subtask.id) {
+        <div class="flex items-center gap-2 group/sub">
+
+          <!-- Checkbox cuadrado -->
+          <button
+            (click)="onToggleSubtask(subtask)"
+            class="flex-shrink-0 w-4 h-4 rounded border transition-all flex items-center justify-center"
+            [class.border-indigo-500]="!subtask.completed"
+            [class.bg-indigo-500]="subtask.completed"
+            [class.border-zinc-500]="subtask.completed"
+            [attr.aria-label]="subtask.completed ? 'Desmarcar subtarea' : 'Completar subtarea'"
+          >
+            @if (subtask.completed) {
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5 text-white" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 12 5 5L20 7"/>
+              </svg>
+            }
+          </button>
+
+          <!-- Modo edición -->
+          @if (editingSubtaskId() === subtask.id) {
+            <input
+              type="text"
+              class="flex-1 bg-zinc-700 border border-indigo-500 rounded px-2 py-0.5
+                     text-xs text-white outline-none"
+              [value]="editingSubtaskTitle()"
+              (input)="editingSubtaskTitle.set($any($event.target).value)"
+              (keydown)="onEditSubtaskKeydown($event, subtask)"
+            />
+            <button
+              (click)="onSaveEditSubtask(subtask)"
+              class="flex-shrink-0 p-1 rounded text-emerald-400 hover:bg-emerald-400/10 transition-colors"
+              aria-label="Guardar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 12 5 5L20 7"/>
+              </svg>
+            </button>
+            <button
+              (click)="onCancelEditSubtask()"
+              class="flex-shrink-0 p-1 rounded text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700 transition-colors"
+              aria-label="Cancelar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+
+          } @else {
+            <!-- Modo lectura -->
+            <span
+              class="flex-1 text-xs text-zinc-300 cursor-default"
+              [class.line-through]="subtask.completed"
+              [class.text-zinc-600]="subtask.completed"
+            >
+              {{ subtask.title }}
+            </span>
+
+            <!-- Botón editar (aparece en hover de la fila) -->
+            <button
+              (click)="onStartEditSubtask(subtask)"
+              class="opacity-0 group-hover/sub:opacity-100 transition-opacity p-1 rounded
+                     text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700"
+              aria-label="Editar subtarea"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+
+            <!-- Botón eliminar (aparece en hover de la fila) -->
+            <button
+              (click)="onDeleteSubtask(subtask)"
+              class="opacity-0 group-hover/sub:opacity-100 transition-opacity p-1 rounded
+                     text-zinc-500 hover:text-red-400 hover:bg-red-400/10"
+              aria-label="Eliminar subtarea"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+              </svg>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Input para agregar nueva subtarea -->
+      <div class="flex items-center gap-2 mt-1">
+        <div class="flex-shrink-0 w-4 h-4 rounded border border-zinc-600 border-dashed"></div>
+        <input
+          type="text"
+          placeholder="Agregar subtarea..."
+          class="flex-1 bg-transparent text-xs text-zinc-300 placeholder-zinc-600
+                 border-none outline-none focus:placeholder-zinc-500"
+          [value]="newSubtaskTitle()"
+          [disabled]="isSavingSubtask()"
+          (input)="newSubtaskTitle.set($any($event.target).value)"
+          (keydown)="onSubtaskKeydown($event)"
+        />
+        @if (newSubtaskTitle().trim()) {
+          <button
+            (click)="onAddSubtask()"
+            [disabled]="isSavingSubtask()"
+            class="flex-shrink-0 w-5 h-5 rounded bg-indigo-600 hover:bg-indigo-500 transition-colors
+                   flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Guardar subtarea"
+          >
+            @if (isSavingSubtask()) {
+              <svg class="w-3 h-3 text-white animate-spin" xmlns="http://www.w3.org/2000/svg"
+                   fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            }
+          </button>
+        }
+      </div>
+    </div>
+  }
 </div>
