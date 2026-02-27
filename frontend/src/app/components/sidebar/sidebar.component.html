@@ -1,0 +1,196 @@
+<!-- Sidebar fija de 240px -->
+<aside class="w-60 h-full flex flex-col bg-zinc-900 border-r border-zinc-800 overflow-y-auto">
+
+  <!-- ── Logo ─────────────────────────────────────────────────── -->
+  <div class="h-16 flex items-center gap-2.5 px-5 border-b border-zinc-800 flex-shrink-0">
+    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+    </div>
+    <span class="font-semibold text-sm text-white tracking-tight">Task Manager</span>
+  </div>
+
+  <!-- ── Navegación principal ──────────────────────────────────── -->
+  <nav class="flex flex-col gap-0.5 px-3 pt-4">
+
+    <!-- Todas las tareas -->
+    <a
+      routerLink="/"
+      [routerLinkActiveOptions]="{ exact: true }"
+      routerLinkActive="bg-zinc-800 text-white"
+      class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
+             hover:text-white hover:bg-zinc-800 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
+      Todas las tareas
+    </a>
+
+    <!-- Tareas diarias -->
+    <a
+      routerLink="/daily"
+      routerLinkActive="bg-zinc-800 text-white"
+      class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
+             hover:text-white hover:bg-zinc-800 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+      Diarias
+    </a>
+
+    <!-- Hoy -->
+    <a
+      routerLink="/today"
+      routerLinkActive="bg-zinc-800 text-white"
+      class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
+             hover:text-white hover:bg-zinc-800 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <path d="M16 2v4M8 2v4M3 10h18"/>
+        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+      </svg>
+      Hoy
+    </a>
+
+    <!-- Próximo -->
+    <a
+      routerLink="/upcoming"
+      routerLinkActive="bg-zinc-800 text-white"
+      class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
+             hover:text-white hover:bg-zinc-800 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      Próximo
+    </a>
+  </nav>
+
+  <!-- ── Divisor ────────────────────────────────────────────────── -->
+  <div class="mx-4 my-4 border-t border-zinc-800"></div>
+
+  <!-- ── Proyectos ─────────────────────────────────────────────── -->
+  <div class="flex flex-col gap-1 px-3 flex-1">
+
+    <!-- Cabecera con título y botón + -->
+    <div class="flex items-center justify-between px-2 mb-1">
+      <span class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+        Proyectos
+      </span>
+      <button
+        (click)="openAddForm()"
+        class="w-5 h-5 rounded flex items-center justify-center text-zinc-500
+               hover:text-zinc-200 hover:bg-zinc-700 transition-colors"
+        aria-label="Nuevo proyecto"
+        [class.opacity-0]="showAddForm()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Formulario de nuevo proyecto -->
+    @if (showAddForm()) {
+      <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-3 flex flex-col gap-3 mb-1">
+
+        <!-- Input nombre -->
+        <input
+          type="text"
+          placeholder="Nombre del proyecto"
+          class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5
+                 text-xs text-white placeholder-zinc-500 outline-none
+                 focus:border-indigo-500 transition-colors"
+          [value]="newGroupName()"
+          (input)="newGroupName.set($any($event.target).value)"
+          (keydown)="onFormKeydown($event)"
+        />
+
+        <!-- Paleta de colores -->
+        <div>
+          <p class="text-[10px] text-zinc-500 mb-1.5">Color del icono</p>
+          <div class="flex flex-wrap gap-1.5">
+            @for (color of PRESET_COLORS; track color) {
+              <button
+                (click)="newGroupColor.set(color)"
+                class="w-5 h-5 rounded-full border-2 transition-all flex-shrink-0"
+                [style.background-color]="color"
+                [class.border-white]="newGroupColor() === color"
+                [class.border-transparent]="newGroupColor() !== color"
+                [attr.aria-label]="'Color ' + color"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <!-- Preview del icono + acciones -->
+        <div class="flex items-center justify-between">
+          <!-- Preview -->
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                 [style.color]="newGroupColor()">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="text-xs text-zinc-300 truncate max-w-[100px]">
+              {{ newGroupName() || 'Sin nombre' }}
+            </span>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex items-center gap-1">
+            <button
+              (click)="cancelAddForm()"
+              class="px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 rounded-md
+                     hover:bg-zinc-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              (click)="saveGroup()"
+              [disabled]="!newGroupName().trim() || isSaving()"
+              class="px-2 py-1 text-xs font-medium bg-indigo-600 hover:bg-indigo-500
+                     text-white rounded-md transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              @if (isSaving()) { Creando… } @else { Crear }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Lista de grupos -->
+    @if (groups().length === 0 && !showAddForm()) {
+      <p class="text-[11px] text-zinc-600 px-2 py-1">Sin proyectos aún.</p>
+    }
+
+    @for (group of groups(); track group.id) {
+      <button
+        class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
+               hover:text-white hover:bg-zinc-800 transition-colors w-full text-left"
+      >
+        <!-- Icono carpeta con el color del proyecto -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+             [style.color]="group.color">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="truncate text-xs">{{ group.name }}</span>
+      </button>
+    }
+  </div>
+</aside>

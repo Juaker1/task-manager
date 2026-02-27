@@ -6,10 +6,13 @@ import {
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { TaskFormCardComponent } from '../../components/task-form-card/task-form-card.component';
 import { TaskCardComponent } from '../../components/task-card/task-card.component';
 import { TaskService } from '../../services/task.service';
 import type { Task, Subtask, CreateTaskPayload } from '../../models/task.model';
+
+type TaskFilter = 'all' | 'daily' | 'today' | 'upcoming';
 
 @Component({
   selector: 'app-tasks-page',
@@ -20,6 +23,22 @@ import type { Task, Subtask, CreateTaskPayload } from '../../models/task.model';
 })
 export class TasksPage implements OnInit {
   private readonly taskService = inject(TaskService);
+  private readonly route       = inject(ActivatedRoute);
+
+  // Filtro determinado por el dato de la ruta (all | daily | urgent)
+  readonly filter: TaskFilter = (this.route.snapshot.data['filter'] as TaskFilter) ?? 'all';
+
+  readonly pageTitle =
+    this.filter === 'daily'    ? 'Tareas diarias' :
+    this.filter === 'today'    ? 'Hoy'             :
+    this.filter === 'upcoming' ? 'Próximo'         :
+    'Todas las tareas';
+
+  readonly emptyMessage =
+    this.filter === 'daily'    ? 'No hay tareas diarias.' :
+    this.filter === 'today'    ? '¡No hay tareas para hoy!' :
+    this.filter === 'upcoming' ? '¡No hay tareas próximas. Todo al día!' :
+    'Usa el botón Nueva tarea para empezar.';
 
   // ── Estado ────────────────────────────────────────────────────
   readonly tasks       = signal<Task[]>([]);
@@ -27,9 +46,42 @@ export class TasksPage implements OnInit {
   readonly isLoading   = signal(false);
   readonly errorMsg    = signal<string | null>(null);
 
+  // ── Filtrado según la vista activa ────────────────────────────
+  readonly displayedTasks = computed(() => {
+    const all = this.tasks();
+
+    if (this.filter === 'daily') {
+      return all.filter((t) => t.type === 'daily');
+    }
+
+    if (this.filter === 'today') {
+      // Tareas cuyo dueDate cae en el día calendario de hoy (UTC)
+      const todayStr = new Date().toISOString().split('T')[0];
+      return all.filter(
+        (t) => !t.completed && !!t.dueDate &&
+               new Date(t.dueDate).toISOString().split('T')[0] === todayStr
+      );
+    }
+
+    if (this.filter === 'upcoming') {
+      // Tareas con dueDate entre mañana y 3 días desde hoy (sin incluir hoy)
+      const todayStr  = new Date().toISOString().split('T')[0];
+      const limitDate = new Date();
+      limitDate.setUTCDate(limitDate.getUTCDate() + 3);
+      const limitStr  = limitDate.toISOString().split('T')[0];
+      return all.filter((t) => {
+        if (t.completed || !t.dueDate) return false;
+        const dueDateStr = new Date(t.dueDate).toISOString().split('T')[0];
+        return dueDateStr > todayStr && dueDateStr <= limitStr;
+      });
+    }
+
+    return all;
+  });
+
   // ── Contadores derivados con computed() ───────────────────────
-  readonly totalTasks     = computed(() => this.tasks().length);
-  readonly completedTasks = computed(() => this.tasks().filter((t) => t.completed).length);
+  readonly totalTasks     = computed(() => this.displayedTasks().length);
+  readonly completedTasks = computed(() => this.displayedTasks().filter((t) => t.completed).length);
   readonly pendingTasks   = computed(() => this.totalTasks() - this.completedTasks());
 
   // ── Ciclo de vida ─────────────────────────────────────────────

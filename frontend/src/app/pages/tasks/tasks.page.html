@@ -1,29 +1,18 @@
-<!-- Layout principal -->
-<div class="min-h-screen bg-zinc-950 text-white">
+<!-- Página de tareas (contenido sin sidebar, el shell ya provee el layout) -->
+<div class="min-h-full">
 
-  <!-- ── Navbar ─────────────────────────────────────────────── -->
-  <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+  <!-- ── Cabecera de página ─────────────────────────────────── -->
+  <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
+    <div class="px-6 h-14 flex items-center justify-between">
+      <h1 class="text-base font-semibold text-white">{{ pageTitle }}</h1>
 
-      <!-- Logo / Título -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-          </svg>
-        </div>
-        <span class="font-semibold text-white tracking-tight">Task Manager</span>
-      </div>
-
-      <!-- Botón nueva tarea (arriba a la derecha) -->
       <button
         (click)="showForm.set(true)"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold
                bg-indigo-600 hover:bg-indigo-500 text-white transition-colors
                focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-zinc-950"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14M5 12h14"/>
         </svg>
@@ -33,7 +22,7 @@
   </header>
 
   <!-- ── Contenido principal ────────────────────────────────── -->
-  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+  <main class="px-6 py-6 max-w-2xl flex flex-col gap-6">
 
     <!-- Stats rápidas -->
     @if (totalTasks() > 0) {
@@ -53,15 +42,13 @@
       </div>
     }
 
-    <!-- Formulario flotante (se muestra inline debajo del header) -->
+    <!-- Formulario flotante -->
     @if (showForm()) {
-      <div class="flex justify-center">
-        <app-task-form-card
-          (saved)="onTaskSaved($event)"
-          (cancelled)="showForm.set(false)"
-          class="w-full"
-        />
-      </div>
+      <app-task-form-card
+        (saved)="onTaskSaved($event)"
+        (cancelled)="showForm.set(false)"
+        class="w-full"
+      />
     }
 
     <!-- Banner de error -->
@@ -94,7 +81,7 @@
 
     <!-- Lista de tareas -->
     @if (!isLoading()) {
-      @if (tasks().length === 0) {
+      @if (displayedTasks().length === 0) {
         <!-- Estado vacío -->
         <div class="flex flex-col items-center justify-center py-20 gap-4 text-center">
           <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
@@ -107,7 +94,7 @@
           </div>
           <div>
             <p class="text-zinc-300 font-medium">Sin tareas por ahora</p>
-            <p class="text-zinc-500 text-sm mt-1">Usa el botón <strong class="text-zinc-400">Nueva tarea</strong> para empezar.</p>
+            <p class="text-zinc-500 text-sm mt-1">{{ emptyMessage }}</p>
           </div>
         </div>
       } @else {
@@ -117,7 +104,7 @@
             <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
               Pendientes · {{ pendingTasks() }}
             </h2>
-            @for (task of tasks(); track task.id) {
+            @for (task of displayedTasks(); track task.id) {
               @if (!task.completed) {
                 <app-task-card
                   [task]="task"
@@ -136,7 +123,7 @@
             <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
               Completadas · {{ completedTasks() }}
             </h2>
-            @for (task of tasks(); track task.id) {
+            @for (task of displayedTasks(); track task.id) {
               @if (task.completed) {
                 <app-task-card
                   [task]="task"
