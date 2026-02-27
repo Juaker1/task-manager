@@ -1,0 +1,153 @@
+<!-- Layout principal -->
+<div class="min-h-screen bg-zinc-950 text-white">
+
+  <!-- ── Navbar ─────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-sm">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+
+      <!-- Logo / Título -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-white tracking-tight">Task Manager</span>
+      </div>
+
+      <!-- Botón nueva tarea (arriba a la derecha) -->
+      <button
+        (click)="showForm.set(true)"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+               bg-indigo-600 hover:bg-indigo-500 text-white transition-colors
+               focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-zinc-950"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Nueva tarea
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Contenido principal ────────────────────────────────── -->
+  <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+
+    <!-- Stats rápidas -->
+    @if (totalTasks() > 0) {
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <p class="text-2xl font-bold text-white">{{ totalTasks() }}</p>
+          <p class="text-xs text-zinc-500 mt-0.5">Total</p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <p class="text-2xl font-bold text-amber-400">{{ pendingTasks() }}</p>
+          <p class="text-xs text-zinc-500 mt-0.5">Pendientes</p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+          <p class="text-2xl font-bold text-emerald-400">{{ completedTasks() }}</p>
+          <p class="text-xs text-zinc-500 mt-0.5">Completadas</p>
+        </div>
+      </div>
+    }
+
+    <!-- Formulario flotante (se muestra inline debajo del header) -->
+    @if (showForm()) {
+      <div class="flex justify-center">
+        <app-task-form-card
+          (saved)="onTaskSaved($event)"
+          (cancelled)="showForm.set(false)"
+          class="w-full"
+        />
+      </div>
+    }
+
+    <!-- Banner de error -->
+    @if (errorMsg()) {
+      <div class="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+        <span>{{ errorMsg() }}</span>
+        <button (click)="errorMsg.set(null)" class="ml-auto text-red-400 hover:text-red-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Estado de carga -->
+    @if (isLoading()) {
+      <div class="flex flex-col items-center justify-center py-20 gap-3 text-zinc-500">
+        <svg class="w-6 h-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <span class="text-sm">Cargando tareas...</span>
+      </div>
+    }
+
+    <!-- Lista de tareas -->
+    @if (!isLoading()) {
+      @if (tasks().length === 0) {
+        <!-- Estado vacío -->
+        <div class="flex flex-col items-center justify-center py-20 gap-4 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-zinc-600" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+              <path d="M9 12h6M9 16h4"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-zinc-300 font-medium">Sin tareas por ahora</p>
+            <p class="text-zinc-500 text-sm mt-1">Usa el botón <strong class="text-zinc-400">Nueva tarea</strong> para empezar.</p>
+          </div>
+        </div>
+      } @else {
+        <!-- Tareas pendientes -->
+        @if (pendingTasks() > 0) {
+          <section class="flex flex-col gap-3">
+            <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+              Pendientes · {{ pendingTasks() }}
+            </h2>
+            @for (task of tasks(); track task.id) {
+              @if (!task.completed) {
+                <app-task-card
+                  [task]="task"
+                  (toggleCompleted)="onToggleCompleted($event)"
+                  (deleteTask)="onDeleteTask($event)"
+                />
+              }
+            }
+          </section>
+        }
+
+        <!-- Tareas completadas -->
+        @if (completedTasks() > 0) {
+          <section class="flex flex-col gap-3">
+            <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+              Completadas · {{ completedTasks() }}
+            </h2>
+            @for (task of tasks(); track task.id) {
+              @if (task.completed) {
+                <app-task-card
+                  [task]="task"
+                  (toggleCompleted)="onToggleCompleted($event)"
+                  (deleteTask)="onDeleteTask($event)"
+                />
+              }
+            }
+          </section>
+        }
+      }
+    }
+
+  </main>
+</div>
