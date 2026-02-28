@@ -31,7 +31,7 @@
       maxlength="255"
       class="bg-zinc-900 border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-zinc-500
              outline-none transition-all
-             focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+             focus:ring-2 focus:ring-blue-500 focus:border-transparent
              disabled:opacity-50"
       [class.border-red-500]="titleError()"
       [class.border-zinc-700]="!titleError()"
@@ -59,7 +59,7 @@
       maxlength="2000"
       class="bg-zinc-900 border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-zinc-500
              outline-none resize-none transition-all
-             focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+             focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       [class.border-red-500]="descriptionError()"
       [class.border-zinc-700]="!descriptionError()"
     ></textarea>
@@ -87,7 +87,7 @@
         (input)="onDueDateInput($event)"
         class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-white
                outline-none transition-all appearance-none
-               focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+               focus:ring-2 focus:ring-blue-500 focus:border-transparent
                [color-scheme:dark]"
       />
       @if (dueDate()) {
@@ -122,9 +122,9 @@
       (click)="onSave()"
       class="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold
              transition-all
-             bg-indigo-600 hover:bg-indigo-500 text-white
-             disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-indigo-600
-             focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-zinc-800"
+             bg-blue-600 hover:bg-blue-500 text-white
+             disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-600
+             focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-zinc-800"
     >
       Guardar tarea
     </button>

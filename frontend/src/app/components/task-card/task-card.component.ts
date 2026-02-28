@@ -37,6 +37,8 @@ export class TaskCardComponent {
   readonly isSavingSubtask     = signal(false);
   readonly editingSubtaskId    = signal<number | null>(null);
   readonly editingSubtaskTitle = signal('');
+  readonly confirmDeleteTask       = signal(false);
+  readonly confirmDeleteSubtaskId  = signal<number | null>(null);
 
   // ── Computed: fecha formateada ────────────────────────────────
   readonly formattedDueDate = computed(() => {
@@ -96,7 +98,16 @@ export class TaskCardComponent {
   }
 
   onDelete(): void {
+    this.confirmDeleteTask.set(true);
+  }
+
+  onConfirmDeleteTask(): void {
     this.deleteTask.emit(this.task().id);
+    this.confirmDeleteTask.set(false);
+  }
+
+  onCancelDeleteTask(): void {
+    this.confirmDeleteTask.set(false);
   }
 
   onToggleExpand(): void {
@@ -159,12 +170,21 @@ export class TaskCardComponent {
 
   // ── Eliminar subtarea ─────────────────────────────────────────
   onDeleteSubtask(subtask: Subtask): void {
+    this.confirmDeleteSubtaskId.set(subtask.id);
+  }
+
+  onConfirmDeleteSubtask(subtask: Subtask): void {
+    this.confirmDeleteSubtaskId.set(null);
     this.subtaskService.delete(subtask.id).subscribe({
       next: () => {
         const updatedList = this.subtasks().filter((s) => s.id !== subtask.id);
         this.subtasksChanged.emit({ taskId: this.task().id, subtasks: updatedList });
       },
     });
+  }
+
+  onCancelDeleteSubtask(): void {
+    this.confirmDeleteSubtaskId.set(null);
   }
 
   // Crea una nueva subtarea

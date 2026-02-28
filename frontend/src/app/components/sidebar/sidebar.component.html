@@ -3,7 +3,7 @@
 
   <!-- ── Logo ─────────────────────────────────────────────────── -->
   <div class="h-16 flex items-center gap-2.5 px-5 border-b border-zinc-800 flex-shrink-0">
-    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+    <div class="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24"
            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -19,7 +19,7 @@
     <a
       routerLink="/"
       [routerLinkActiveOptions]="{ exact: true }"
-      routerLinkActive="bg-zinc-800 text-white"
+      routerLinkActive="bg-blue-500/15 text-white"
       class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
              hover:text-white hover:bg-zinc-800 transition-colors"
     >
@@ -35,7 +35,7 @@
     <!-- Tareas diarias -->
     <a
       routerLink="/daily"
-      routerLinkActive="bg-zinc-800 text-white"
+      routerLinkActive="bg-blue-500/15 text-white"
       class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
              hover:text-white hover:bg-zinc-800 transition-colors"
     >
@@ -50,7 +50,7 @@
     <!-- Hoy -->
     <a
       routerLink="/today"
-      routerLinkActive="bg-zinc-800 text-white"
+      routerLinkActive="bg-blue-500/15 text-white"
       class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
              hover:text-white hover:bg-zinc-800 transition-colors"
     >
@@ -66,7 +66,7 @@
     <!-- Próximo -->
     <a
       routerLink="/upcoming"
-      routerLinkActive="bg-zinc-800 text-white"
+      routerLinkActive="bg-blue-500/15 text-white"
       class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
              hover:text-white hover:bg-zinc-800 transition-colors"
     >
@@ -113,7 +113,7 @@
           placeholder="Nombre del proyecto"
           class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5
                  text-xs text-white placeholder-zinc-500 outline-none
-                 focus:border-indigo-500 transition-colors"
+                 focus:border-blue-500 transition-colors"
           [value]="newGroupName()"
           (input)="newGroupName.set($any($event.target).value)"
           (keydown)="onFormKeydown($event)"
@@ -162,7 +162,7 @@
             <button
               (click)="saveGroup()"
               [disabled]="!newGroupName().trim() || isSaving()"
-              class="px-2 py-1 text-xs font-medium bg-indigo-600 hover:bg-indigo-500
+              class="px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-500
                      text-white rounded-md transition-colors
                      disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -199,8 +199,8 @@
     <button
       (click)="layout.showNewTaskForm.set(true)"
       class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
-             bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold
-             transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400
+             bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold
+             transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400
              focus:ring-offset-2 focus:ring-offset-zinc-900"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
