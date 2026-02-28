@@ -1,11 +1,15 @@
 import {
   Component,
   computed,
+  inject,
   output,
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { GroupService } from '../../services/group.service';
 import type { CreateTaskPayload } from '../../models/task.model';
+import type { Group } from '../../models/task.model';
 
 @Component({
   selector: 'app-task-form-card',
@@ -14,21 +18,27 @@ import type { CreateTaskPayload } from '../../models/task.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TaskFormCardComponent {
+  private readonly groupService = inject(GroupService);
+
   // ── Outputs ───────────────────────────────────────────────────
-  // Emite el payload cuando el usuario guarda
-  readonly saved    = output<CreateTaskPayload>();
-  // Emite cuando el usuario cancela
+  readonly saved     = output<CreateTaskPayload>();
   readonly cancelled = output<void>();
 
-  // ── Estado del formulario con Signals ─────────────────────────
-  readonly title       = signal('');
-  readonly description = signal('');
-  // Fecha límite opcional — string 'YYYY-MM-DD' o vacío
-  readonly dueDate     = signal('');
-  // Muestra errores solo después del primer intento de guardar
-  readonly submitted   = signal(false);
+  // ── Grupos disponibles (cargados desde el servicio) ───────────
+  readonly groups = toSignal(this.groupService.getAll(), {
+    initialValue: [] as Group[],
+  });
 
-  // ── Validación con computed() ─────────────────────────────────
+  // ── Estado del formulario ─────────────────────────────────────
+  readonly title           = signal('');
+  readonly description     = signal('');
+  readonly dueDate         = signal('');   // 'YYYY-MM-DD' o ''
+  readonly dueTime         = signal('');   // 'HH:MM' o '' (opcional)
+  readonly isDaily         = signal(false);
+  readonly selectedGroupId = signal<number | null>(null);
+  readonly submitted       = signal(false);
+
+  // ── Validación ────────────────────────────────────────────────
   readonly titleError = computed(() =>
     this.submitted() && this.title().trim().length === 0
       ? 'El título es obligatorio'
@@ -41,15 +51,21 @@ export class TaskFormCardComponent {
       : null
   );
 
-  // El formulario es válido solo si título y descripción tienen contenido.
-  // dueDate es opcional, no bloquea el guardado.
   readonly isValid = computed(
-    () =>
-      this.title().trim().length > 0 &&
-      this.description().trim().length > 0
+    () => this.title().trim().length > 0 && this.description().trim().length > 0
   );
 
-  // Fecha mínima seleccionable = hoy (evita fechas pasadas)
+  // Opciones de hora en intervalos de 30 min para el selector
+  readonly TIME_OPTIONS: { label: string; value: string }[] = Array.from(
+    { length: 48 },
+    (_, i) => {
+      const h = Math.floor(i / 2).toString().padStart(2, '0');
+      const m = i % 2 === 0 ? '00' : '30';
+      return { label: `${h}:${m}`, value: `${h}:${m}` };
+    }
+  );
+
+  // Fecha mínima seleccionable = hoy
   readonly minDate = new Date().toISOString().split('T')[0];
 
   // ── Handlers ──────────────────────────────────────────────────
@@ -62,38 +78,65 @@ export class TaskFormCardComponent {
   }
 
   onDueDateInput(event: Event): void {
-    this.dueDate.set((event.target as HTMLInputElement).value);
+    const val = (event.target as HTMLInputElement).value;
+    this.dueDate.set(val);
+    // Si se borra la fecha, limpiar también la hora
+    if (!val) this.dueTime.set('');
+  }
+
+  onDueTimeInput(event: Event): void {
+    this.dueTime.set((event.target as HTMLSelectElement).value);
+  }
+
+  onToggleDaily(): void {
+    const next = !this.isDaily();
+    this.isDaily.set(next);
+    // Las tareas diarias no tienen fecha límite
+    if (next) {
+      this.dueDate.set('');
+      this.dueTime.set('');
+    }
+  }
+
+  onGroupChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    this.selectedGroupId.set(val ? Number(val) : null);
   }
 
   onSave(): void {
-    // Marcamos como "intentado" para mostrar los errores
     this.submitted.set(true);
-
     if (!this.isValid()) return;
 
-    // Convertimos la fecha 'YYYY-MM-DD' a ISO 8601 si fue ingresada
-    const dueDateISO = this.dueDate()
-      ? new Date(this.dueDate() + 'T00:00:00').toISOString()
-      : null;
+    // Combinar fecha + hora en ISO 8601
+    let dueDateISO: string | null = null;
+    if (this.dueDate()) {
+      const time = this.dueTime() || '00:00';
+      dueDateISO = new Date(`${this.dueDate()}T${time}:00`).toISOString();
+    }
 
     this.saved.emit({
       title:       this.title().trim(),
       description: this.description().trim(),
+      type:        this.isDaily() ? 'daily' : 'regular',
+      groupId:     this.selectedGroupId(),
       dueDate:     dueDateISO,
     });
 
-    // Reseteamos el formulario
-    this.title.set('');
-    this.description.set('');
-    this.dueDate.set('');
-    this.submitted.set(false);
+    this.resetForm();
   }
 
   onCancel(): void {
+    this.resetForm();
+    this.cancelled.emit();
+  }
+
+  private resetForm(): void {
     this.title.set('');
     this.description.set('');
     this.dueDate.set('');
+    this.dueTime.set('');
+    this.isDaily.set(false);
+    this.selectedGroupId.set(null);
     this.submitted.set(false);
-    this.cancelled.emit();
   }
 }
