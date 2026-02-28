@@ -8,10 +8,8 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { GroupService } from '../../services/group.service';
 import type { CreateTaskPayload, Task, UpdateTaskPayload, TaskPriority } from '../../models/task.model';
-import type { Group } from '../../models/task.model';
 
 @Component({
   selector: 'app-task-form-card',
@@ -37,10 +35,10 @@ export class TaskFormCardComponent {
   readonly taskUpdated  = output<{ id: number; payload: UpdateTaskPayload }>();
   readonly cancelled    = output<void>();
 
-  // ── Grupos disponibles (cargados desde el servicio) ───────────
-  readonly groups = toSignal(this.groupService.getAll(), {
-    initialValue: [] as Group[],
-  });
+  // ── Proyectos disponibles (caché reactiva del servicio) ───────────
+  // Cualquier cambio en el sidebar (crear/editar/borrar proyecto)
+  // se refleja aquí automáticamente sin recargar la página.
+  readonly groups = this.groupService.groups;
 
   // ── Modo actual ──────────────────────────────────────────────
   readonly isEditMode = computed(() => !!this.editTask());

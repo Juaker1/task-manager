@@ -63,7 +63,7 @@
         <!-- Divisor -->
         <span class="w-px h-4 bg-zinc-700 flex-shrink-0"></span>
 
-        <!-- Selector de grupo -->
+        <!-- Selector de proyecto -->
         <div class="relative flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 pointer-events-none"
                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -79,10 +79,10 @@
                    disabled:opacity-40 disabled:cursor-not-allowed
                    transition-colors cursor-pointer hover:border-zinc-600
                    [color-scheme:dark]"
-            [attr.title]="groups().length === 0 ? 'No hay grupos. Créalos desde el sidebar.' : null"
+            [attr.title]="groups().length === 0 ? 'No hay proyectos. Créalos desde el sidebar.' : null"
           >
             <option value="">
-              {{ groups().length === 0 ? 'Sin grupos' : 'Sin grupo' }}
+              {{ groups().length === 0 ? 'Sin proyectos' : 'Sin proyecto' }}
             </option>
             @for (group of groups(); track group.id) {
               <option [value]="group.id"

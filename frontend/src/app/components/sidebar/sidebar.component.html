@@ -179,31 +179,131 @@
     }
 
     @for (group of groups(); track group.id) {
-      <a
-        [routerLink]="['/groups', group.id]"
-        routerLinkActive="bg-blue-500/15 text-white"
-        #rla="routerLinkActive"
-        class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
-               hover:text-white hover:bg-zinc-800 transition-colors w-full text-left"
-      >
-        <!-- Icono carpeta: rellena cuando está activa, contorno cuando no -->
-        @if (rla.isActive) {
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
-               fill="currentColor" stroke="currentColor" stroke-width="0.5"
-               stroke-linecap="round" stroke-linejoin="round"
-               [style.color]="group.color">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          </svg>
-        } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="1.75"
-               stroke-linecap="round" stroke-linejoin="round"
-               [style.color]="group.color">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          </svg>
-        }
-        <span class="truncate text-xs">{{ group.name }}</span>
-      </a>
+
+      <!-- ── Modo edición inline ─────────────────────────────── -->
+      @if (editingGroupId() === group.id) {
+        <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-3 flex flex-col gap-2.5 mb-0.5">
+
+          <!-- Input nombre -->
+          <input
+            type="text"
+            [value]="editingGroupName()"
+            (input)="editingGroupName.set($any($event.target).value)"
+            (keydown)="onEditKeydown($event)"
+            class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5
+                   text-xs text-white placeholder-zinc-500 outline-none
+                   focus:border-blue-500 transition-colors"
+            placeholder="Nombre del proyecto"
+          />
+
+          <!-- Paleta de colores -->
+          <div class="flex flex-wrap gap-1.5">
+            @for (color of PRESET_COLORS; track color) {
+              <button
+                (click)="editingGroupColor.set(color)"
+                class="w-5 h-5 rounded-full border-2 transition-all flex-shrink-0"
+                [style.background-color]="color"
+                [class.border-white]="editingGroupColor() === color"
+                [class.border-transparent]="editingGroupColor() !== color"
+              ></button>
+            }
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex items-center justify-end gap-1">
+            <button
+              (click)="cancelEditGroup()"
+              class="px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 rounded-md
+                     hover:bg-zinc-700 transition-colors"
+            >Cancelar</button>
+            <button
+              (click)="saveEditGroup()"
+              [disabled]="!editingGroupName().trim() || isUpdating()"
+              class="px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-500
+                     text-white rounded-md transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              @if (isUpdating()) { Guardando… } @else { Guardar }
+            </button>
+          </div>
+        </div>
+
+      <!-- ── Modo confirmación de borrado ───────────────────── -->
+      } @else if (confirmDeleteId() === group.id) {
+        <div class="bg-zinc-800 border border-red-500/30 rounded-xl px-3 py-2.5 flex flex-col gap-2 mb-0.5">
+          <p class="text-xs text-zinc-300 leading-snug">
+            ¿Eliminar <span class="font-semibold text-white">{{ group.name }}</span>?<br>
+            <span class="text-zinc-500">Las tareas del proyecto no se eliminarán.</span>
+          </p>
+          <div class="flex gap-1">
+            <button
+              (click)="cancelDelete()"
+              class="flex-1 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 rounded-md
+                     bg-zinc-700 hover:bg-zinc-600 transition-colors"
+            >Cancelar</button>
+            <button
+              (click)="confirmDelete(group.id)"
+              class="flex-1 px-2 py-1 text-xs font-medium text-white bg-red-600
+                     hover:bg-red-500 rounded-md transition-colors"
+            >Eliminar</button>
+          </div>
+        </div>
+
+      <!-- ── Modo normal: enlace con botones en hover ───────── -->
+      } @else {
+        <div class="group/item relative flex items-center rounded-lg">
+          <a
+            [routerLink]="['/groups', group.id]"
+            routerLinkActive="bg-blue-500/15 text-white"
+            #rla="routerLinkActive"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
+                   hover:text-white hover:bg-zinc-800 transition-colors w-full text-left pr-14"
+          >
+            @if (rla.isActive) {
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+                   fill="currentColor" stroke="currentColor" stroke-width="0.5"
+                   stroke-linecap="round" stroke-linejoin="round"
+                   [style.color]="group.color">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="1.75"
+                   stroke-linecap="round" stroke-linejoin="round"
+                   [style.color]="group.color">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            }
+            <span class="truncate text-xs">{{ group.name }}</span>
+          </a>
+
+          <!-- Botones editar / eliminar (aparecen al hover de la fila) -->
+          <div class="absolute right-1 flex items-center gap-0.5
+                      opacity-0 group-hover/item:opacity-100 transition-opacity">
+            <button
+              (click)="startEditGroup(group)"
+              class="p-1 rounded text-zinc-500 hover:text-blue-400 hover:bg-zinc-700 transition-colors"
+              aria-label="Editar proyecto"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button
+              (click)="askDeleteGroup(group.id)"
+              class="p-1 rounded text-zinc-500 hover:text-red-400 hover:bg-zinc-700 transition-colors"
+              aria-label="Eliminar proyecto"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
     }
   </div>
 

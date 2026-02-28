@@ -1,14 +1,15 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
-  ChangeDetectionStrategy,
   inject,
   signal,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { GroupService } from '../../services/group.service';
+import { Group } from '../../models/task.model';
 import { LayoutService } from '../../services/layout.service';
-import type { Group } from '../../models/task.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,14 +20,24 @@ import type { Group } from '../../models/task.model';
 })
 export class SidebarComponent implements OnInit {
   private readonly groupService  = inject(GroupService);
+  private readonly router        = inject(Router);
   readonly layout                = inject(LayoutService);
 
-  // ── Estado de grupos ──────────────────────────────────────────
-  readonly groups        = signal<Group[]>([]);
+  // Caché reactiva del servicio — automáticamente al día para todos los consumers
+  readonly groups = this.groupService.groups;
+
+  // ── Formulario de nuevo proyecto ──────────────────────────────
   readonly showAddForm   = signal(false);
   readonly newGroupName  = signal('');
   readonly newGroupColor = signal('#6366f1');
   readonly isSaving      = signal(false);
+
+  // ── Estado de edición inline ───────────────────────────────
+  readonly editingGroupId    = signal<number | null>(null);
+  readonly editingGroupName  = signal('');
+  readonly editingGroupColor = signal('');
+  readonly isUpdating        = signal(false);
+  readonly confirmDeleteId   = signal<number | null>(null);
 
   // ── Paleta de colores predefinidos ────────────────────────────
   readonly PRESET_COLORS: string[] = [
@@ -43,9 +54,7 @@ export class SidebarComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.groupService.getAll().subscribe({
-      next: (groups) => this.groups.set(groups),
-    });
+    this.groupService.load().subscribe();
   }
 
   // Abre el formulario y resetea los campos
@@ -64,20 +73,73 @@ export class SidebarComponent implements OnInit {
     if (!name) return;
 
     this.isSaving.set(true);
+    // El servicio actualiza groups() automáticamente vía tap()
     this.groupService.create({ name, color: this.newGroupColor() }).subscribe({
-      next: (created) => {
-        this.groups.update((list) => [...list, created]);
+      next: () => {
         this.showAddForm.set(false);
         this.isSaving.set(false);
       },
-      error: () => {
-        this.isSaving.set(false);
-      },
+      error: () => { this.isSaving.set(false); },
     });
   }
 
   onFormKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter') { event.preventDefault(); this.saveGroup(); }
     if (event.key === 'Escape') { this.cancelAddForm(); }
+  }
+
+  // ── Edición de grupo ──────────────────────────────────────────
+  startEditGroup(group: Group): void {
+    this.confirmDeleteId.set(null);
+    this.editingGroupId.set(group.id);
+    this.editingGroupName.set(group.name);
+    this.editingGroupColor.set(group.color);
+  }
+
+  cancelEditGroup(): void {
+    this.editingGroupId.set(null);
+  }
+
+  saveEditGroup(): void {
+    const id   = this.editingGroupId();
+    const name = this.editingGroupName().trim();
+    if (!id || !name) return;
+
+    this.isUpdating.set(true);
+    // El servicio actualiza groups() automáticamente vía tap()
+    this.groupService.update(id, { name, color: this.editingGroupColor() }).subscribe({
+      next: () => {
+        this.editingGroupId.set(null);
+        this.isUpdating.set(false);
+      },
+      error: () => { this.isUpdating.set(false); },
+    });
+  }
+
+  onEditKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter')  { event.preventDefault(); this.saveEditGroup(); }
+    if (event.key === 'Escape') { this.cancelEditGroup(); }
+  }
+
+  // ── Eliminación de grupo ──────────────────────────────────────
+  askDeleteGroup(id: number): void {
+    this.editingGroupId.set(null);
+    this.confirmDeleteId.set(id);
+  }
+
+  cancelDelete(): void {
+    this.confirmDeleteId.set(null);
+  }
+
+  confirmDelete(id: number): void {
+    // El servicio actualiza groups() automáticamente vía tap()
+    this.groupService.delete(id).subscribe({
+      next: () => {
+        this.confirmDeleteId.set(null);
+        if (this.router.url.includes(`/groups/${id}`)) {
+          this.router.navigate(['/']);
+        }
+      },
+    });
   }
 }
