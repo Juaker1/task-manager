@@ -1,17 +1,18 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
-  ChangeDetectionStrategy,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TaskFormCardComponent } from '../../components/task-form-card/task-form-card.component';
 import { TaskCardComponent } from '../../components/task-card/task-card.component';
 import { TaskService } from '../../services/task.service';
 import { LayoutService } from '../../services/layout.service';
-import type { Task, Subtask, CreateTaskPayload } from '../../models/task.model';
+import type { Task, Subtask, CreateTaskPayload, UpdateTaskPayload } from '../../models/task.model';
 
 type TaskFilter = 'all' | 'daily' | 'today' | 'upcoming';
 
@@ -27,9 +28,42 @@ export class TasksPage implements OnInit {
   private readonly route       = inject(ActivatedRoute);
   readonly layout              = inject(LayoutService);
 
-  // Alias local para el template
-  get showForm() { return this.layout.showNewTaskForm; }
   readonly filter: TaskFilter = (this.route.snapshot.data['filter'] as TaskFilter) ?? 'all';
+
+  // Tarea siendo editada actualmente (null = ninguna)
+  readonly editingTask     = signal<Task | null>(null);
+  // Incrementa cada vez que se abre el form para NUEVA tarea → aplica defaults
+  readonly formOpenTrigger = signal(0);
+
+  // El form se muestra si el panel de nueva tarea está abierto O hay una tarea en edición
+  readonly showForm = computed(() => this.layout.showNewTaskForm() || !!this.editingTask());
+
+  // Valores iniciales del form según la pestaña activa
+  readonly formInitialIsDaily = computed(() => this.filter === 'daily');
+  readonly formInitialDueDate = computed((): string => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    if (this.filter === 'today') {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+    if (this.filter === 'upcoming') {
+      const d = new Date();
+      d.setDate(d.getDate() + 3);
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+    return '';
+  });
+
+  constructor() {
+    // Cada vez que showNewTaskForm se activa en modo creación → incrementar
+    // el trigger para que el form aplique los defaults del filtro activo.
+    effect(() => {
+      const isOpen = this.layout.showNewTaskForm();
+      if (isOpen && !this.editingTask()) {
+        this.formOpenTrigger.update((n) => n + 1);
+      }
+    });
+  }
 
   readonly pageTitle =
     this.filter === 'daily'    ? 'Tareas diarias' :
@@ -90,7 +124,18 @@ export class TasksPage implements OnInit {
   ngOnInit(): void {
     this.loadTasks();
   }
+  // ── Abrir / cerrar formulario ──────────────────────────────
+  // Abre el form para NUEVA tarea (limpia cualquier edición activa)
+  openNewTaskForm(): void {
+    this.editingTask.set(null);
+    this.layout.showNewTaskForm.set(true);
+    // El effect del constructor detectará el cambio y aplicará los defaults
+  }
 
+  onFormCancelled(): void {
+    this.editingTask.set(null);
+    this.layout.showNewTaskForm.set(false);
+  }
   // ── Cargar tareas desde la API ────────────────────────────────
   loadTasks(): void {
     this.isLoading.set(true);
@@ -120,7 +165,25 @@ export class TasksPage implements OnInit {
       },
     });
   }
+  // ── Abrir formulario de edición ──────────────────────────────
+  onTaskEditRequested(task: Task): void {
+    this.layout.showNewTaskForm.set(false); // cerrar form de nueva tarea si estaba abierto
+    this.editingTask.set(task);             // establece la tarea a editar (abre el form)
+  }
 
+  // ── Guardar cambios de tarea editada ─────────────────────────
+  // Recargamos todas las tareas para que los joins (group, subtasks) se reflejen correctamente.
+  onTaskUpdated({ id, payload }: { id: number; payload: UpdateTaskPayload }): void {
+    this.taskService.update(id, payload).subscribe({
+      next: () => {
+        this.editingTask.set(null);
+        this.loadTasks();
+      },
+      error: () => {
+        this.errorMsg.set('Error al actualizar la tarea.');
+      },
+    });
+  }
   // ── Toggle completado ─────────────────────────────────────────
   // IMPORTANTE: el PUT devuelve solo la fila plana (sin subtasks ni group).
   // Fusionamos la respuesta con los datos relacionales existentes para no perderlos.

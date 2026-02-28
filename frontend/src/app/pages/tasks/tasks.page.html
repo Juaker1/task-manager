@@ -56,8 +56,13 @@
          [style.marginBottom]="showForm() ? '0px' : '-24px'">
       <div class="min-h-0">
         <app-task-form-card
+          [editTask]="editingTask()"
+          [initialIsDaily]="formInitialIsDaily()"
+          [initialDueDate]="formInitialDueDate()"
+          [openTrigger]="formOpenTrigger()"
           (saved)="onTaskSaved($event)"
-          (cancelled)="layout.showNewTaskForm.set(false)"
+          (taskUpdated)="onTaskUpdated($event)"
+          (cancelled)="onFormCancelled()"
           class="w-full block"
         />
       </div>
@@ -97,7 +102,7 @@
       <!-- Línea + para añadir tarea rápido -->
       @if (!showForm()) {
         <button
-          (click)="layout.showNewTaskForm.set(true)"
+          (click)="openNewTaskForm()"
           class="group relative flex items-center gap-3 w-full py-1 text-zinc-600 hover:text-zinc-400 transition-colors"
           aria-label="Nueva tarea"
         >
@@ -137,11 +142,12 @@
               Pendientes · {{ pendingTasks() }}
             </h2>
             @for (task of displayedTasks(); track task.id) {
-              @if (!task.completed) {
+              @if (!task.completed && task.id !== editingTask()?.id) {
                 <app-task-card
                   [task]="task"
                   (toggleCompleted)="onToggleCompleted($event)"
                   (deleteTask)="onDeleteTask($event)"
+                  (editTask)="onTaskEditRequested($event)"
                   (subtasksChanged)="onSubtasksChanged($event)"
                 />
               }
@@ -156,11 +162,12 @@
               Completadas · {{ completedTasks() }}
             </h2>
             @for (task of displayedTasks(); track task.id) {
-              @if (task.completed) {
+              @if (task.completed && task.id !== editingTask()?.id) {
                 <app-task-card
                   [task]="task"
                   (toggleCompleted)="onToggleCompleted($event)"
                   (deleteTask)="onDeleteTask($event)"
+                  (editTask)="onTaskEditRequested($event)"
                   (subtasksChanged)="onSubtasksChanged($event)"
                 />
               }

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, isNull, isNotNull } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, inArray } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { tasks } from "../db/schema.js";
 import {
@@ -8,6 +8,17 @@ import {
 } from "../validators/task.validator.js";
 
 export const tasksRouter = new Hono();
+
+// Helper: devuelve true si date cae en el día de hoy (hora local del servidor)
+function isToday(date: Date | null | undefined): boolean {
+  if (!date) return false;
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth()    === now.getMonth()    &&
+    date.getDate()     === now.getDate()
+  );
+}
 
 // ── GET /api/tasks ───────────────────────────────────────────
 // Devuelve todas las tareas incluyendo sus subtareas y grupo.
@@ -45,6 +56,28 @@ tasksRouter.get("/", async (c) => {
       },
       orderBy: (t, { desc }) => [desc(t.createdAt)],
     });
+
+    // ── Reset automático de tareas diarias ──────────────────
+    // Si la tarea diaria fue completada en un día anterior, se resetea.
+    const toReset = allTasks.filter(
+      (t) => t.type === "daily" && t.completed && !isToday(t.lastCompletedDate)
+    );
+
+    if (toReset.length > 0) {
+      await db
+        .update(tasks)
+        .set({ completed: false, lastCompletedDate: null, updatedAt: new Date() })
+        .where(inArray(tasks.id, toReset.map((t) => t.id)));
+
+      // Reflejar el reset en la respuesta sin hacer una segunda query
+      const resetIds = new Set(toReset.map((t) => t.id));
+      for (const task of allTasks) {
+        if (resetIds.has(task.id)) {
+          (task as Record<string, unknown>).completed = false;
+          (task as Record<string, unknown>).lastCompletedDate = null;
+        }
+      }
+    }
 
     return c.json({ data: allTasks });
   } catch (error) {
@@ -148,6 +181,13 @@ tasksRouter.put("/:id", async (c) => {
     // Solo incluimos dueDate en la actualización si el campo fue enviado
     if ("dueDate" in parsed.data) {
       updateData.dueDate = dueDate ? new Date(dueDate) : null;
+    }
+
+    // Si el payload incluye `completed`, actualizamos lastCompletedDate:
+    //   true  → guardamos ahora como timestamp del momento de completado
+    //   false → limpiamos (desmarcado manual)
+    if ("completed" in parsed.data) {
+      updateData.lastCompletedDate = parsed.data.completed ? new Date() : null;
     }
 
     const [updated] = await db

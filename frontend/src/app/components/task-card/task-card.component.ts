@@ -26,8 +26,7 @@ export class TaskCardComponent {
 
   // ── Outputs ───────────────────────────────────────────────────
   readonly toggleCompleted  = output<Task>();
-  readonly deleteTask       = output<number>();
-  // Notifica al padre que la lista de subtareas cambió
+  readonly deleteTask       = output<number>();  readonly editTask         = output<Task>();  // Notifica al padre que la lista de subtareas cambió
   // (necesario para que el padre refresque el signal de tasks)
   readonly subtasksChanged  = output<{ taskId: number; subtasks: Subtask[] }>();
 
@@ -95,6 +94,10 @@ export class TaskCardComponent {
   // ── Handlers ─────────────────────────────────────────────────
   onToggle(): void {
     this.toggleCompleted.emit(this.task());
+  }
+
+  onEdit(): void {
+    this.editTask.emit(this.task());
   }
 
   onDelete(): void {

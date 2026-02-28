@@ -58,6 +58,11 @@ export const tasks = sqliteTable("tasks", {
   // Fecha límite opcional (Unix ms). NULL si no tiene deadline.
   dueDate: integer("due_date", { mode: "timestamp_ms" }),
 
+  // Última vez que la tarea fue marcada como completada (Unix ms).
+  // Solo relevante para tareas diarias: se usa para reset automático al día siguiente.
+  // NULL si nunca fue completada o si fue desmarcada manualmente.
+  lastCompletedDate: integer("last_completed_date", { mode: "timestamp_ms" }),
+
   // FK al grupo al que pertenece (opcional).
   // ON DELETE SET NULL: si se borra el grupo, la tarea queda sin grupo.
   groupId: integer("group_id").references(() => groups.id, {

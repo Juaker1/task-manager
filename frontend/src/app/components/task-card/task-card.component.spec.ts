@@ -13,18 +13,19 @@ const mockSubtasks: Subtask[] = [
   { id: 12, title: 'Sub 3', completed: false, taskId: 1, order: 2, createdAt: new Date().toISOString() },
 ];
 const mockTask: Task = {
-  id:          1,
-  title:       'Tarea de prueba',
-  description: 'Descripción de la tarea',
-  completed:   false,
-  type:        'regular',
-  priority:    'medium',
-  dueDate:     null,
-  groupId:     null,
-  group:       null,
-  subtasks:    [],
-  createdAt:   new Date().toISOString(),
-  updatedAt:   new Date().toISOString(),
+  id:                1,
+  title:             'Tarea de prueba',
+  description:       'Descripción de la tarea',
+  completed:         false,
+  type:              'regular',
+  priority:          'medium',
+  dueDate:           null,
+  lastCompletedDate: null,
+  groupId:           null,
+  group:             null,
+  subtasks:          [],
+  createdAt:         new Date().toISOString(),
+  updatedAt:         new Date().toISOString(),
 };
 
 describe('TaskCardComponent', () => {

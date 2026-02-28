@@ -29,6 +29,7 @@ export interface Task {
   type:        TaskType;
   priority:    TaskPriority;
   dueDate:     string | null;
+  lastCompletedDate: string | null;
   groupId:     number | null;
   group?:      Pick<Group, 'id' | 'name' | 'color'> | null;
   subtasks?:   Subtask[];
