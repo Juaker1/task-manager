@@ -40,15 +40,13 @@ describe('TaskFormCardComponent', () => {
     expect(component.isValid()).toBe(false);
   });
 
-  it('isValid debería ser true cuando title y description tienen contenido', () => {
+  it('isValid debería ser true cuando title tiene contenido', () => {
     component.title.set('Mi tarea');
-    component.description.set('Descripción de prueba');
     expect(component.isValid()).toBe(true);
   });
 
   it('no debería mostrar errores antes del primer intento de guardar', () => {
     expect(component.titleError()).toBeNull();
-    expect(component.descriptionError()).toBeNull();
   });
 
   it('debería mostrar error de título si se intenta guardar con título vacío', () => {
@@ -56,13 +54,7 @@ describe('TaskFormCardComponent', () => {
     expect(component.titleError()).toBe('El título es obligatorio');
   });
 
-  it('debería mostrar error de descripción si se intenta guardar con descripción vacía', () => {
-    component.title.set('Mi tarea');
-    component.onSave();
-    expect(component.descriptionError()).toBe('La descripción es obligatoria');
-  });
-
-  it('debería emitir el payload correcto al guardar con datos válidos', () => {
+  it('debería emitir el payload correcto al guardar sin descripción', () => {
     // vi.fn() es el equivalente de jasmine.createSpy() en Vitest
     const savedSpy = vi.fn();
     component.saved.subscribe(savedSpy);

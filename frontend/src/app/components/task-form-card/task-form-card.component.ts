@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { GroupService } from '../../services/group.service';
-import type { CreateTaskPayload, Task, UpdateTaskPayload } from '../../models/task.model';
+import type { CreateTaskPayload, Task, UpdateTaskPayload, TaskPriority } from '../../models/task.model';
 import type { Group } from '../../models/task.model';
 
 @Component({
@@ -26,8 +26,9 @@ export class TaskFormCardComponent {
   // Tarea a editar (null = modo creación)
   readonly editTask       = input<Task | null>(null);
   // Valores iniciales para nueva tarea (según el filtro activo de la página)
-  readonly initialIsDaily = input(false);
-  readonly initialDueDate = input('');
+  readonly initialIsDaily  = input(false);
+  readonly initialDueDate  = input('');
+  readonly initialGroupId  = input<number | null>(null);
   // Incrementar para resetear el form y aplicar valores iniciales
   readonly openTrigger    = input(0);
 
@@ -52,6 +53,7 @@ export class TaskFormCardComponent {
       this.title.set(task.title);
       this.description.set(task.description ?? '');
       this.isDaily.set(task.type === 'daily');
+      this.priority.set(task.priority);
       this.selectedGroupId.set(task.groupId ?? null);
       this.submitted.set(false);
       if (task.dueDate) {
@@ -77,6 +79,9 @@ export class TaskFormCardComponent {
         this.resetForm();
         this.isDaily.set(this.initialIsDaily());
         this.dueDate.set(this.initialDueDate());
+        if (this.initialGroupId() !== null) {
+          this.selectedGroupId.set(this.initialGroupId());
+        }
       }
     });
   }
@@ -87,6 +92,7 @@ export class TaskFormCardComponent {
   readonly dueDate         = signal('');   // 'YYYY-MM-DD' o ''
   readonly dueTime         = signal('');   // 'HH:MM' o '' (opcional)
   readonly isDaily         = signal(false);
+  readonly priority        = signal<TaskPriority>('medium');
   readonly selectedGroupId = signal<number | null>(null);
   readonly submitted       = signal(false);
 
@@ -97,14 +103,8 @@ export class TaskFormCardComponent {
       : null
   );
 
-  readonly descriptionError = computed(() =>
-    this.submitted() && this.description().trim().length === 0
-      ? 'La descripción es obligatoria'
-      : null
-  );
-
   readonly isValid = computed(
-    () => this.title().trim().length > 0 && this.description().trim().length > 0
+    () => this.title().trim().length > 0
   );
 
   // Opciones de hora en intervalos de 30 min para el selector
@@ -160,6 +160,10 @@ export class TaskFormCardComponent {
     this.selectedGroupId.set(val ? Number(val) : null);
   }
 
+  onPriorityChange(p: TaskPriority): void {
+    this.priority.set(p);
+  }
+
   onSave(): void {
     this.submitted.set(true);
     if (!this.isValid()) return;
@@ -177,8 +181,9 @@ export class TaskFormCardComponent {
         id: editTask.id,
         payload: {
           title:       this.title().trim(),
-          description: this.description().trim(),
+          description: this.description().trim() || null,
           type:        this.isDaily() ? 'daily' : 'regular',
+          priority:    this.priority(),
           groupId:     this.selectedGroupId(),
           dueDate:     dueDateISO,
         },
@@ -186,8 +191,9 @@ export class TaskFormCardComponent {
     } else {
       this.saved.emit({
         title:       this.title().trim(),
-        description: this.description().trim(),
+        description: this.description().trim() || null,
         type:        this.isDaily() ? 'daily' : 'regular',
+        priority:    this.priority(),
         groupId:     this.selectedGroupId(),
         dueDate:     dueDateISO,
       });
@@ -207,6 +213,7 @@ export class TaskFormCardComponent {
     this.dueDate.set('');
     this.dueTime.set('');
     this.isDaily.set(false);
+    this.priority.set('medium');
     this.selectedGroupId.set(null);
     this.submitted.set(false);
   }

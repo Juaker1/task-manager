@@ -179,18 +179,31 @@
     }
 
     @for (group of groups(); track group.id) {
-      <button
+      <a
+        [routerLink]="['/groups', group.id]"
+        routerLinkActive="bg-blue-500/15 text-white"
+        #rla="routerLinkActive"
         class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-400
                hover:text-white hover:bg-zinc-800 transition-colors w-full text-left"
       >
-        <!-- Icono carpeta con el color del proyecto -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
-             [style.color]="group.color">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-        </svg>
+        <!-- Icono carpeta: rellena cuando está activa, contorno cuando no -->
+        @if (rla.isActive) {
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+               fill="currentColor" stroke="currentColor" stroke-width="0.5"
+               stroke-linecap="round" stroke-linejoin="round"
+               [style.color]="group.color">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.75"
+               stroke-linecap="round" stroke-linejoin="round"
+               [style.color]="group.color">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        }
         <span class="truncate text-xs">{{ group.name }}</span>
-      </button>
+      </a>
     }
   </div>
 

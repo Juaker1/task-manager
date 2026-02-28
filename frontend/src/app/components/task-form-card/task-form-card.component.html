@@ -127,7 +127,7 @@
   <!-- ── Campo: Descripción ────────────────────────────────────── -->
   <div class="flex flex-col gap-1.5">
     <label for="task-description" class="text-sm font-medium text-zinc-300">
-      Descripción <span class="text-red-400">*</span>
+      Descripción <span class="text-zinc-500 font-normal">(opcional)</span>
     </label>
     <textarea
       id="task-description"
@@ -136,19 +136,70 @@
       (input)="onDescriptionInput($event)"
       placeholder="Agrega más detalle sobre la tarea..."
       maxlength="2000"
-      class="bg-zinc-900 border rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-zinc-500
+      class="bg-zinc-900 border border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-zinc-500
              outline-none resize-none transition-all
              focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      [class.border-red-500]="descriptionError()"
-      [class.border-zinc-700]="!descriptionError()"
     ></textarea>
-    @if (descriptionError()) {
-      <p class="text-xs text-red-400 flex items-center gap-1">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 shrink-0" viewBox="0 0 24 24"
-             fill="currentColor"><path d="M12 4a8 8 0 1 0 0 16A8 8 0 0 0 12 4zm0 4a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0v-4A.75.75 0 0 1 12 8zm0 7.5a.875.875 0 1 1 0 1.75.875.875 0 0 1 0-1.75z"/></svg>
-        {{ descriptionError() }}
-      </p>
-    }
+  </div>
+
+  <!-- ── Campo: Prioridad ───────────────────────────────────────── -->
+  <div class="flex flex-col gap-1.5">
+    <label class="text-sm font-medium text-zinc-300">Prioridad</label>
+    <div class="flex gap-2">
+
+      <!-- Baja -->
+      <button
+        type="button"
+        (click)="onPriorityChange('low')"
+        class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-xs font-medium
+               transition-all"
+        [class.bg-zinc-700]="priority() === 'low'"
+        [class.border-zinc-500]="priority() === 'low'"
+        [class.text-zinc-200]="priority() === 'low'"
+        [class.bg-zinc-900]="priority() !== 'low'"
+        [class.border-zinc-700]="priority() !== 'low'"
+        [class.text-zinc-500]="priority() !== 'low'"
+        [class.hover:border-zinc-500]="priority() !== 'low'"
+      >
+        <span class="w-2 h-2 rounded-full bg-zinc-400 flex-shrink-0"></span>
+        Baja
+      </button>
+
+      <!-- Media -->
+      <button
+        type="button"
+        (click)="onPriorityChange('medium')"
+        class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-xs font-medium
+               transition-all"
+        [class.bg-yellow-500/15]="priority() === 'medium'"
+        [class.border-yellow-500/40]="priority() === 'medium'"
+        [class.text-yellow-300]="priority() === 'medium'"
+        [class.bg-zinc-900]="priority() !== 'medium'"
+        [class.border-zinc-700]="priority() !== 'medium'"
+        [class.text-zinc-500]="priority() !== 'medium'"
+      >
+        <span class="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></span>
+        Media
+      </button>
+
+      <!-- Alta -->
+      <button
+        type="button"
+        (click)="onPriorityChange('high')"
+        class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-xs font-medium
+               transition-all"
+        [class.bg-red-500/15]="priority() === 'high'"
+        [class.border-red-500/40]="priority() === 'high'"
+        [class.text-red-300]="priority() === 'high'"
+        [class.bg-zinc-900]="priority() !== 'high'"
+        [class.border-zinc-700]="priority() !== 'high'"
+        [class.text-zinc-500]="priority() !== 'high'"
+      >
+        <span class="w-2 h-2 rounded-full bg-red-400 flex-shrink-0"></span>
+        Alta
+      </button>
+
+    </div>
   </div>
 
   <!-- ── Campo: Fecha límite + Hora ────────────────────────────── -->
