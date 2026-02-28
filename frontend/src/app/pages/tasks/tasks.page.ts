@@ -10,6 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { TaskFormCardComponent } from '../../components/task-form-card/task-form-card.component';
 import { TaskCardComponent } from '../../components/task-card/task-card.component';
 import { TaskService } from '../../services/task.service';
+import { LayoutService } from '../../services/layout.service';
 import type { Task, Subtask, CreateTaskPayload } from '../../models/task.model';
 
 type TaskFilter = 'all' | 'daily' | 'today' | 'upcoming';
@@ -24,8 +25,10 @@ type TaskFilter = 'all' | 'daily' | 'today' | 'upcoming';
 export class TasksPage implements OnInit {
   private readonly taskService = inject(TaskService);
   private readonly route       = inject(ActivatedRoute);
+  readonly layout              = inject(LayoutService);
 
-  // Filtro determinado por el dato de la ruta (all | daily | urgent)
+  // Alias local para el template
+  get showForm() { return this.layout.showNewTaskForm; }
   readonly filter: TaskFilter = (this.route.snapshot.data['filter'] as TaskFilter) ?? 'all';
 
   readonly pageTitle =
@@ -42,7 +45,6 @@ export class TasksPage implements OnInit {
 
   // ── Estado ────────────────────────────────────────────────────
   readonly tasks       = signal<Task[]>([]);
-  readonly showForm    = signal(false);
   readonly isLoading   = signal(false);
   readonly errorMsg    = signal<string | null>(null);
 
@@ -110,9 +112,8 @@ export class TasksPage implements OnInit {
   onTaskSaved(payload: CreateTaskPayload): void {
     this.taskService.create(payload).subscribe({
       next: (newTask) => {
-        // Agregamos la nueva tarea al inicio de la lista sin recargar todo
         this.tasks.update((list) => [newTask, ...list]);
-        this.showForm.set(false);
+        this.layout.showNewTaskForm.set(false);
       },
       error: () => {
         this.errorMsg.set('Error al guardar la tarea. Intenta de nuevo.');

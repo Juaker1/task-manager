@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { GroupService } from '../../services/group.service';
+import { LayoutService } from '../../services/layout.service';
 import type { Group } from '../../models/task.model';
 
 @Component({
@@ -17,7 +18,8 @@ import type { Group } from '../../models/task.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarComponent implements OnInit {
-  private readonly groupService = inject(GroupService);
+  private readonly groupService  = inject(GroupService);
+  readonly layout                = inject(LayoutService);
 
   // ── Estado de grupos ──────────────────────────────────────────
   readonly groups        = signal<Group[]>([]);
