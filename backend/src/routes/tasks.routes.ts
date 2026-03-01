@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import { eq, and, isNull, isNotNull, inArray } from "drizzle-orm";
+import { eq, and, isNull, inArray } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "../db/index.js";
 import { tasks } from "../db/schema.js";
 import {
@@ -54,7 +55,7 @@ tasksRouter.get("/", async (c) => {
 
         return conditions.length > 0 ? and(...conditions) : undefined;
       },
-      orderBy: (t, { desc }) => [desc(t.createdAt)],
+      orderBy: (t, { asc, desc }) => [asc(t.order), desc(t.createdAt)],
     });
 
     // ── Reset automático de tareas diarias ──────────────────
@@ -82,6 +83,38 @@ tasksRouter.get("/", async (c) => {
     return c.json({ data: allTasks });
   } catch (error) {
     return c.json({ error: "Error al obtener las tareas" }, 500);
+  }
+});
+
+// ── PUT /api/tasks/reorder ──────────────────────────────────
+// Actualiza el campo `order` de múltiples tareas en una sola operación.
+// Body: { tasks: [{id: number, order: number}] }
+const reorderSchema = z.object({
+  tasks: z.array(z.object({ id: z.number().int(), order: z.number().int() })).min(1),
+});
+
+tasksRouter.put("/reorder", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  if (!body) return c.json({ error: "El cuerpo de la petición es inválido" }, 400);
+
+  const parsed = reorderSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: "Datos inválidos", details: parsed.error.flatten() }, 422);
+  }
+
+  try {
+    // Actualizamos cada tarea en una transacción para garantizar atomicidad
+    await db.transaction(async (tx) => {
+      for (const { id, order } of parsed.data.tasks) {
+        await tx
+          .update(tasks)
+          .set({ order, updatedAt: new Date() })
+          .where(eq(tasks.id, id));
+      }
+    });
+    return c.json({ message: "Orden actualizado" });
+  } catch (error) {
+    return c.json({ error: "Error al reordenar las tareas" }, 500);
   }
 });
 

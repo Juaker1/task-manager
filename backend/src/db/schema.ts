@@ -69,6 +69,10 @@ export const tasks = sqliteTable("tasks", {
     onDelete: "set null",
   }),
 
+  // Posición de la tarea en la lista (para ordenamiento manual por drag & drop).
+  // 0 por defecto; se actualiza vía PUT /api/tasks/reorder.
+  order: integer("order").notNull().default(0),
+
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),

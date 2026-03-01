@@ -8,13 +8,14 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import type { Task, Subtask } from '../../models/task.model';
 import { SubtaskService } from '../../services/subtask.service';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CdkDragHandle],
   templateUrl: './task-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

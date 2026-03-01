@@ -201,41 +201,47 @@
       } @else {
 
         <!-- Tareas pendientes -->
-        @if (pendingTasks() > 0) {
-          <section class="flex flex-col gap-3">
+        @if (pendingDisplayed().length > 0) {
+          <section
+            cdkDropList
+            (cdkDropListDropped)="onDrop($event, 'pending')"
+            class="flex flex-col gap-3"
+          >
             <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
               Pendientes · {{ pendingTasks() }}
             </h2>
-            @for (task of displayedTasks(); track task.id) {
-              @if (!task.completed && task.id !== editingTask()?.id) {
-                <app-task-card
-                  [task]="task"
-                  (toggleCompleted)="onToggleCompleted($event)"
-                  (deleteTask)="onDeleteTask($event)"
-                  (editTask)="onTaskEditRequested($event)"
-                  (subtasksChanged)="onSubtasksChanged($event)"
-                />
-              }
+            @for (task of pendingDisplayed(); track task.id) {
+              <app-task-card
+                cdkDrag
+                [task]="task"
+                (toggleCompleted)="onToggleCompleted($event)"
+                (deleteTask)="onDeleteTask($event)"
+                (editTask)="onTaskEditRequested($event)"
+                (subtasksChanged)="onSubtasksChanged($event)"
+              />
             }
           </section>
         }
 
         <!-- Tareas completadas -->
-        @if (completedTasks() > 0) {
-          <section class="flex flex-col gap-3">
+        @if (completedDisplayed().length > 0) {
+          <section
+            cdkDropList
+            (cdkDropListDropped)="onDrop($event, 'completed')"
+            class="flex flex-col gap-3"
+          >
             <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">
               Completadas · {{ completedTasks() }}
             </h2>
-            @for (task of displayedTasks(); track task.id) {
-              @if (task.completed && task.id !== editingTask()?.id) {
-                <app-task-card
-                  [task]="task"
-                  (toggleCompleted)="onToggleCompleted($event)"
-                  (deleteTask)="onDeleteTask($event)"
-                  (editTask)="onTaskEditRequested($event)"
-                  (subtasksChanged)="onSubtasksChanged($event)"
-                />
-              }
+            @for (task of completedDisplayed(); track task.id) {
+              <app-task-card
+                cdkDrag
+                [task]="task"
+                (toggleCompleted)="onToggleCompleted($event)"
+                (deleteTask)="onDeleteTask($event)"
+                (editTask)="onTaskEditRequested($event)"
+                (subtasksChanged)="onSubtasksChanged($event)"
+              />
             }
           </section>
         }

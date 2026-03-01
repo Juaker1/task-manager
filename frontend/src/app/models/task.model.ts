@@ -33,6 +33,7 @@ export interface Task {
   groupId:     number | null;
   group?:      Pick<Group, 'id' | 'name' | 'color'> | null;
   subtasks?:   Subtask[];
+  order:       number;
   createdAt:   string;
   updatedAt:   string;
 }

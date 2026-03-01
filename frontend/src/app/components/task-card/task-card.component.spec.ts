@@ -23,6 +23,7 @@ const mockTask: Task = {
   lastCompletedDate: null,
   groupId:           null,
   group:             null,
+  order:             0,
   subtasks:          [],
   createdAt:         new Date().toISOString(),
   updatedAt:         new Date().toISOString(),

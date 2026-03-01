@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { TaskFormCardComponent } from '../../components/task-form-card/task-form-card.component';
 import { TaskCardComponent } from '../../components/task-card/task-card.component';
 import { TaskService } from '../../services/task.service';
@@ -19,7 +20,7 @@ type TaskFilter = 'all' | 'daily' | 'today' | 'upcoming';
 @Component({
   selector: 'app-tasks-page',
   standalone: true,
-  imports: [TaskFormCardComponent, TaskCardComponent],
+  imports: [TaskFormCardComponent, TaskCardComponent, CdkDropList, CdkDrag],
   templateUrl: './tasks.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -119,7 +120,13 @@ export class TasksPage implements OnInit {
   readonly totalTasks     = computed(() => this.displayedTasks().length);
   readonly completedTasks = computed(() => this.displayedTasks().filter((t) => t.completed).length);
   readonly pendingTasks   = computed(() => this.totalTasks() - this.completedTasks());
-
+  // Sub-arrays para el drag & drop (excluyen la tarea en edición para que no "desaparezca" al arrastrar)
+  readonly pendingDisplayed   = computed(() =>
+    this.displayedTasks().filter((t) => !t.completed && t.id !== this.editingTask()?.id)
+  );
+  readonly completedDisplayed = computed(() =>
+    this.displayedTasks().filter((t) => t.completed && t.id !== this.editingTask()?.id)
+  );
   // ── Ciclo de vida ─────────────────────────────────────────────
   ngOnInit(): void {
     this.loadTasks();
@@ -222,4 +229,32 @@ export class TasksPage implements OnInit {
       list.map((t) => (t.id === taskId ? { ...t, subtasks } : t))
     );
   }
-}
+  // ── Drag & Drop ────────────────────────────────────────────────────
+  onDrop(event: CdkDragDrop<Task[]>, section: 'pending' | 'completed'): void {
+    if (event.previousIndex === event.currentIndex) return;
+
+    const source   = section === 'pending' ? this.pendingDisplayed() : this.completedDisplayed();
+    const reordered = [...source];
+    moveItemInArray(reordered, event.previousIndex, event.currentIndex);
+
+    const reorderPayload = reordered.map((t, i) => ({ id: t.id, order: i }));
+    const movedIds       = new Set(source.map((t) => t.id));
+
+    // Actualización optimista: reemplaza las tareas del grupo movido
+    // manteniendo su nueva posición relativa dentro del signal
+    this.tasks.update((all) => {
+      let idx = 0;
+      return all.map((t) => {
+        if (movedIds.has(t.id)) {
+          const replacement = reordered[idx++];
+          return { ...replacement, order: idx - 1 };
+        }
+        return t;
+      });
+    });
+
+    // Persiste en backend; revierte si falla
+    this.taskService.reorder(reorderPayload).subscribe({
+      error: () => this.loadTasks(),
+    });
+  }}

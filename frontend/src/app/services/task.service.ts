@@ -41,4 +41,8 @@ export class TaskService {
       .delete<ApiResponse<{ id: number }>>(`${this.baseUrl}/${id}`)
       .pipe(map((res) => res.data));
   }
-}
+  // ── PUT /api/tasks/reorder ────────────────────────────────────
+  reorder(payload: { id: number; order: number }[]): Observable<void> {
+    return this.http
+      .put<void>(`${this.baseUrl}/reorder`, { tasks: payload });
+  }}
