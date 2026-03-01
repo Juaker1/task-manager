@@ -130,6 +130,31 @@
           </span>
         }
 
+        <!-- Hora límite (visible solo cuando se seleccionó una hora) -->
+        @if (formattedDueTime()) {
+          <span
+            class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border"
+            [class.bg-purple-500/10]="isOverdue()"
+            [class.text-purple-400]="isOverdue()"
+            [class.border-purple-500/20]="isOverdue()"
+            [class.bg-red-500/10]="!isOverdue() && isDueUrgent()"
+            [class.text-red-400]="!isOverdue() && isDueUrgent()"
+            [class.border-red-500/20]="!isOverdue() && isDueUrgent()"
+            [class.bg-yellow-500/10]="!isOverdue() && !isDueUrgent() && isDueSoon()"
+            [class.text-yellow-400]="!isOverdue() && !isDueUrgent() && isDueSoon()"
+            [class.border-yellow-500/20]="!isOverdue() && !isDueUrgent() && isDueSoon()"
+            [class.bg-zinc-500/10]="!isOverdue() && !isDueUrgent() && !isDueSoon()"
+            [class.text-zinc-400]="!isOverdue() && !isDueUrgent() && !isDueSoon()"
+            [class.border-zinc-600]="!isOverdue() && !isDueUrgent() && !isDueSoon()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            {{ formattedDueTime() }}
+          </span>
+        }
+
         <!-- Contador de subtareas (visible cuando hay subtareas) -->
         @if (subtaskCount() > 0) {
           <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5

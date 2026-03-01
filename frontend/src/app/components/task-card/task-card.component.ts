@@ -49,12 +49,32 @@ export class TaskCardComponent {
     }).format(new Date(raw));
   });
 
+  // true si la fecha tiene una hora específica (no medianoche local)
+  readonly hasTime = computed(() => {
+    const raw = this.task().dueDate;
+    if (!raw) return false;
+    const d = new Date(raw);
+    return d.getHours() !== 0 || d.getMinutes() !== 0;
+  });
+
+  // Hora formateada en HH:MM (solo cuando hasTime)
+  readonly formattedDueTime = computed(() => {
+    const raw = this.task().dueDate;
+    if (!raw || !this.hasTime()) return null;
+    return new Intl.DateTimeFormat('es-AR', {
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(new Date(raw));
+  });
+
   // ── Computed: estados de fecha ────────────────────────────────
 
   // Fecha ya pasó y tarea pendiente → morado
   readonly isOverdue = computed(() => {
     const raw = this.task().dueDate;
     if (!raw || this.task().completed) return false;
+    // Con hora específica: comparación exacta de timestamps
+    if (this.hasTime()) return new Date(raw).getTime() < Date.now();
+    // Sin hora: comparación por bucket de día
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return new Date(raw) < today;

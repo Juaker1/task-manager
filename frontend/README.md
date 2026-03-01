@@ -9,6 +9,7 @@ Interfaz de usuario del gestor de tareas, construida con **Angular 21** en modo 
 | Tecnología | Versión | Rol |
 |---|---|---|
 | [Angular](https://angular.dev/) | ^21.2 | Framework principal |
+| [Angular CDK](https://material.angular.io/cdk) | ^21.2 | Drag & Drop y utilidades |
 | [Tailwind CSS](https://tailwindcss.com/) | ^4.1 | Estilos utilitarios |
 | [RxJS](https://rxjs.dev/) | ~7.8 | Manejo de streams asíncronos |
 | [Vitest](https://vitest.dev/) | ^4.0 | Test runner |

@@ -115,6 +115,7 @@ backend/
 | `GET` | `/api/tasks?ungrouped=true` | Solo tareas sin proyecto |
 | `GET` | `/api/tasks/:id` | Obtiene una tarea con sus subtareas y proyecto |
 | `POST` | `/api/tasks` | Crea una nueva tarea |
+| `PUT` | `/api/tasks/reorder` | Actualiza el orden de múltiples tareas en una transacción |
 | `PUT` | `/api/tasks/:id` | Actualiza cualquier campo de una tarea |
 | `DELETE` | `/api/tasks/:id` | Elimina una tarea (subtareas eliminadas por CASCADE) |
 
@@ -151,5 +152,5 @@ Petición HTTP
 **Decisiones técnicas relevantes:**
 
 - **Reset automático de tareas diarias:** al hacer `GET /api/tasks`, el servidor detecta las tareas de tipo `daily` que fueron completadas en un día anterior y las resetea automáticamente antes de devolver la respuesta, sin necesidad de un proceso programado externo.
-- **Borrado en cascada y SET NULL:** al eliminar una tarea, sus subtareas se borran por `CASCADE`. Al eliminar un proyecto, las tareas quedan con `groupId = NULL` (`SET NULL`).
+- **Borrado en cascada y SET NULL:** al eliminar una tarea, sus subtareas se borran por `CASCADE`. Al eliminar un proyecto, el comportamiento es configurable: por defecto las tareas quedan huérfanas (`groupId = NULL`), pero si se pasa el query param `?deleteTasks=true` las tareas y sus subtareas se eliminan junto con el proyecto.
 - **Timestamps como enteros Unix (ms):** todos los campos de fecha se almacenan como `INTEGER` en milisegundos para compatibilidad con libSQL y simplicidad en la serialización/deserialización.
