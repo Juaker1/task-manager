@@ -78,7 +78,7 @@ Cada subcarpeta tiene su propio README con documentación detallada:
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/<usuario>/task-manager.git
+git clone https://github.com/Juaker1/task-manager.git
 cd task-manager
 ```
 
