@@ -33,6 +33,11 @@ export class GroupPage implements OnInit {
   // ── Estado del grupo ──────────────────────────────────────────
   readonly group = signal<Group | null>(null);
 
+  // ── Estado de descripción ──────────────────────────────────────
+  readonly isEditingDesc   = signal(false);
+  readonly descriptionDraft = signal('');
+  readonly isSavingDesc    = signal(false);
+
   // ── Estado del formulario ─────────────────────────────────────
   readonly editingTask     = signal<Task | null>(null);
   readonly formOpenTrigger = signal(0);
@@ -74,6 +79,36 @@ export class GroupPage implements OnInit {
         this.group.set(groups.find((g) => g.id === this.groupId) ?? null);
       },
     });
+  }
+
+  startEditDescription(): void {
+    this.descriptionDraft.set(this.group()?.description ?? '');
+    this.isEditingDesc.set(true);
+  }
+
+  cancelEditDescription(): void {
+    this.isEditingDesc.set(false);
+  }
+
+  saveDescription(): void {
+    const description = this.descriptionDraft().trim() || null;
+    this.isSavingDesc.set(true);
+    this.groupService.update(this.groupId, { description }).subscribe({
+      next: () => {
+        this.group.update((g) => g ? { ...g, description } : g);
+        this.isEditingDesc.set(false);
+        this.isSavingDesc.set(false);
+      },
+      error: () => { this.isSavingDesc.set(false); },
+    });
+  }
+
+  onDescKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') { this.cancelEditDescription(); }
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      this.saveDescription();
+    }
   }
 
   loadTasks(): void {

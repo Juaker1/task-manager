@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { groups } from "../db/schema.js";
+import { groups, tasks } from "../db/schema.js";
 import {
   createGroupSchema,
   updateGroupSchema,
@@ -123,15 +123,23 @@ groupsRouter.put("/:id", async (c) => {
 });
 
 // ── DELETE /api/groups/:id ───────────────────────────────────
-// Elimina un grupo. Las tareas asociadas quedan con groupId = NULL (SET NULL).
+// Elimina un grupo.
+// ?deleteTasks=true → también elimina todas las tareas del grupo (y sus subtareas por CASCADE).
+// Por defecto las tareas quedan con groupId = NULL (SET NULL).
 groupsRouter.delete("/:id", async (c) => {
   const id = Number(c.req.param("id"));
+  const deleteTasks = c.req.query("deleteTasks") === "true";
 
   if (isNaN(id)) {
     return c.json({ error: "ID inválido" }, 400);
   }
 
   try {
+    if (deleteTasks) {
+      // Eliminamos primero las tareas; las subtareas se borran por CASCADE.
+      await db.delete(tasks).where(eq(tasks.groupId, id));
+    }
+
     const [deleted] = await db
       .delete(groups)
       .where(eq(groups.id, id))

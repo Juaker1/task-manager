@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // ── Crear grupo ──────────────────────────────────────────────
 export const createGroupSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido").max(100),
+  name: z.string().min(1, "El nombre es requerido").max(35),
 
   description: z.string().max(500).optional().nullable(),
 
@@ -15,7 +15,7 @@ export const createGroupSchema = z.object({
 
 // ── Actualizar grupo ──────────────────────────────────────────
 export const updateGroupSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
+  name: z.string().min(1).max(35).optional(),
   description: z.string().max(500).optional().nullable(),
   color: z
     .string()

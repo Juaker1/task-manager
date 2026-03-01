@@ -12,7 +12,7 @@ export interface CreateGroupPayload {
 
 export interface UpdateGroupPayload {
   name?:        string;
-  description?: string;
+  description?: string | null;
   color?:       string;
 }
 
@@ -59,9 +59,12 @@ export class GroupService {
       );
   }
 
-  delete(id: number): Observable<{ id: number }> {
+  delete(id: number, deleteTasks = false): Observable<{ id: number }> {
+    const url = deleteTasks
+      ? `${this.baseUrl}/${id}?deleteTasks=true`
+      : `${this.baseUrl}/${id}`;
     return this.http
-      .delete<{ data: { id: number } }>(`${this.baseUrl}/${id}`)
+      .delete<{ data: { id: number } }>(url)
       .pipe(
         map((r) => r.data),
         tap(() => this.groups.update((list) => list.filter((g) => g.id !== id))),

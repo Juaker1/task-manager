@@ -1,59 +1,90 @@
-# Frontend
+﻿# Task Manager — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+Interfaz de usuario del gestor de tareas, construida con **Angular 21** en modo zoneless y estilos con **Tailwind CSS v4**.
 
-## Development server
+---
 
-To start a local development server, run:
+## Stack tecnológico
 
-```bash
-ng serve
-```
+| Tecnología | Versión | Rol |
+|---|---|---|
+| [Angular](https://angular.dev/) | ^21.2 | Framework principal |
+| [Tailwind CSS](https://tailwindcss.com/) | ^4.1 | Estilos utilitarios |
+| [RxJS](https://rxjs.dev/) | ~7.8 | Manejo de streams asíncronos |
+| [Vitest](https://vitest.dev/) | ^4.0 | Test runner |
+| TypeScript | ~5.9 | Lenguaje |
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Requisitos previos
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- **Node.js** >= 18
+- **pnpm** >= 9
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## Instalación
 
 ```bash
-ng build
+# Desde la raíz del repositorio
+cd frontend
+pnpm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## Scripts disponibles
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+| Script | Descripción |
+|---|---|
+| `pnpm start` | Inicia el servidor de desarrollo en `http://localhost:4200` |
+| `pnpm build` | Genera el build de producción en `dist/` |
+| `pnpm watch` | Build en modo watch para desarrollo |
+| `pnpm test` | Ejecuta los tests unitarios con Vitest |
 
-```bash
-ng test
+---
+
+## Estructura del proyecto
+
+```
+frontend/src/
+├── app/
+│   ├── app.config.ts          # Configuración raíz de la aplicación (providers, HTTP client)
+│   ├── app.routes.ts          # Definición de rutas
+│   ├── components/
+│   │   ├── sidebar/           # Navegación lateral con lista de proyectos (CRUD inline)
+│   │   ├── task-card/         # Tarjeta individual de tarea con expansión, edición y subtareas
+│   │   └── task-form-card/    # Formulario de creación y edición de tareas
+│   ├── models/
+│   │   └── task.model.ts      # Interfaces y tipos (Task, Subtask, Group, TaskPriority, etc.)
+│   ├── pages/
+│   │   ├── shell/             # Layout principal: sidebar + área de contenido
+│   │   ├── tasks/             # Vista de tareas con filtros (todas, diarias, hoy, próximas)
+│   │   └── group/             # Vista de tareas de un proyecto específico
+│   └── services/
+│       ├── group.service.ts   # CRUD de proyectos + signal compartida de lista
+│       ├── task.service.ts    # CRUD de tareas
+│       ├── subtask.service.ts # CRUD de subtareas
+│       └── layout.service.ts  # Estado del layout (sidebar abierto/cerrado)
+└── styles.css                 # Estilos globales + directivas Tailwind
 ```
 
-## Running end-to-end tests
+### Rutas
 
-For end-to-end (e2e) testing, run:
+| Ruta | Componente | Descripción |
+|---|---|---|
+| `/` | TasksPage | Todas las tareas |
+| `/daily` | TasksPage | Tareas diarias |
+| `/today` | TasksPage | Tareas con vencimiento hoy |
+| `/upcoming` | TasksPage | Tareas próximas a vencer |
+| `/groups/:id` | GroupPage | Tareas de un proyecto específico |
 
-```bash
-ng e2e
-```
+---
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Arquitectura y patrones
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Zoneless + OnPush:** la aplicación corre sin Zone.js. Todos los componentes usan `ChangeDetectionStrategy.OnPush` y dependen exclusivamente de signals para disparar la detección de cambios.
+- **Signals como fuente de verdad:** el estado local de componentes y el estado compartido entre ellos (por ejemplo, la lista de proyectos en `GroupService`) se gestionan con `signal()` y `computed()` de Angular.
+- **Componentes standalone:** no se usan NgModules. Todos los componentes, directivas y pipes se declaran como standalone y se importan directamente donde se necesitan.
+- **Inyección con `inject()`:** los servicios se inyectan usando la función `inject()` en lugar del constructor.
+- **Servicios singleton:** todos los servicios usan `providedIn: 'root'` para garantizar una única instancia compartida por toda la aplicación.

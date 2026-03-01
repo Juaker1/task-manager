@@ -38,6 +38,7 @@ export class SidebarComponent implements OnInit {
   readonly editingGroupColor = signal('');
   readonly isUpdating        = signal(false);
   readonly confirmDeleteId   = signal<number | null>(null);
+  readonly deleteTasksToo    = signal(false);
 
   // ── Paleta de colores predefinidos ────────────────────────────
   readonly PRESET_COLORS: string[] = [
@@ -124,18 +125,21 @@ export class SidebarComponent implements OnInit {
   // ── Eliminación de grupo ──────────────────────────────────────
   askDeleteGroup(id: number): void {
     this.editingGroupId.set(null);
+    this.deleteTasksToo.set(false);
     this.confirmDeleteId.set(id);
   }
 
   cancelDelete(): void {
     this.confirmDeleteId.set(null);
+    this.deleteTasksToo.set(false);
   }
 
   confirmDelete(id: number): void {
     // El servicio actualiza groups() automáticamente vía tap()
-    this.groupService.delete(id).subscribe({
+    this.groupService.delete(id, this.deleteTasksToo()).subscribe({
       next: () => {
         this.confirmDeleteId.set(null);
+        this.deleteTasksToo.set(false);
         if (this.router.url.includes(`/groups/${id}`)) {
           this.router.navigate(['/']);
         }
